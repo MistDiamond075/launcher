@@ -1,0 +1,51 @@
+package org.launcher.async;
+
+import javafx.application.Platform;
+import org.launcher.entity.InstanceEntity;
+import org.launcher.utils.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+public class CloseWindowAsync {
+    private static final Logger logger = LoggerFactory.getLogger(CloseWindowAsync.class);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final Pair<Long,TimeUnit> defaultDelay = new Pair<>(150L, TimeUnit.MILLISECONDS);
+    private final Pair<Long,TimeUnit> defaultPeriod = new Pair<>(5000L, TimeUnit.MILLISECONDS);
+
+    public CloseWindowAsync() {}
+
+    public void scheduleClose(final InstanceEntity instance, final long delay,final long period, final TimeUnit unit) {
+        Platform.runLater(() -> {
+       //     instance.setState(InstanceEntity.State.CLOSING);
+        });
+        scheduler.scheduleAtFixedRate(() ->{
+                if(instance.getHwnds().isEmpty()){
+                    logger.debug("-------------------------------- pid={},alive={},hwnds={},state={} ---------------------------------------------",instance.getProcess().pid(),instance.getProcess().isAlive(),instance.getHwnds(),instance.getState());
+                    Platform.runLater(() -> instance.setState(InstanceEntity.State.CLOSED));
+                }
+        }, delay,period, unit);
+    }
+
+    public void scheduleClose(final InstanceEntity instance) {
+        scheduleClose(instance,defaultDelay.key, defaultPeriod.key, defaultDelay.value);
+    }
+
+    public void stop() {
+        try {
+            logger.debug("Stopping CloseWindow scheduler");
+            scheduler.shutdown();
+            boolean off = scheduler.awaitTermination(5, TimeUnit.SECONDS);
+            if(!off){
+                throw new InterruptedException();
+            }
+        } catch (InterruptedException e) {
+            logger.debug("Stopping scheduler immediately");
+            scheduler.shutdownNow();
+        }
+        logger.debug("CloseWindow scheduler stopped");
+    }
+}

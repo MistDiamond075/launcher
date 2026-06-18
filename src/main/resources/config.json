@@ -1,0 +1,52 @@
+{
+  "launcher": {
+    "title": "Demo header",
+    "orgName": "Jopa",
+    "fullscreen": true,
+    "showDate": true,
+    "showVersion": true,
+    "hideCursor": false,
+    "allowMultipleInstances": true,
+    "adminMenuEnabled": true
+  },
+  "apps": [
+    {
+      "id": "chrome",
+      "name": "google chrome",
+      "description": "demo browser test",
+      "icon": null,
+      "arguments": "--new-window\"",
+      "workingDirectory": "C:\\Program Files\\Google\\Chrome\\Application",
+      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "enabled": true,
+      "allowMultipleInstances": true,
+      "enableInstancesCounter": false,
+      "restartOnError": true,
+      "maxRuntime": null
+    },
+    {
+      "id": "chrome2",
+      "name": "google chrome",
+      "description": "demo browser test",
+      "icon": null,
+      "arguments": "--new-window\"",
+      "workingDirectory": "C:\\Program Files\\Google\\Chrome\\Application",
+      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "enabled": true,
+      "allowMultipleInstances": false,
+      "enableInstancesCounter": false,
+      "restartOnError": true,
+      "maxRuntime": null
+    }
+  ],
+  "admin": {
+      "password": "123",
+    "sessionTimeout": null
+  },
+  "logging": {
+      "level": "DEBUG",
+      "printToFile": false,
+      "log": "CONSOLE",
+      "filePath": ""
+  }
+}

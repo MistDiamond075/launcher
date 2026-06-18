@@ -1,0 +1,225 @@
+package org.launcher.controller;
+
+import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.ListChangeListener;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.StackPane;
+import org.launcher.config.ConfigurationControl;
+import org.launcher.entity.InstanceEntity;
+import org.launcher.service.AppService;
+import org.launcher.entity.AppEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+public class MainController {
+    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
+    private final ConfigurationControl configurationControl;
+    private final AppService appService;
+    private final Map<String,Button> app_button = new HashMap<>();
+    private final Map<InstanceEntity, ChangeListener<InstanceEntity.State>> stateListeners = new HashMap<>();
+    private final Map<String, IntegerProperty> appCounters = new HashMap<>();
+    @FXML
+    private Label labelHeader;
+    @FXML
+    private Label appsContainerPlaceholder;
+    @FXML
+    private FlowPane appsContainer;
+
+    public MainController(ConfigurationControl configurationControl) {
+        this.configurationControl = configurationControl;
+        appService = new AppService();
+    }
+
+    @FXML
+    public void initialize() {
+        setHeader();
+        setAppList();
+        subscribeToInstances();
+        logger.debug("MainController initialized");
+    }
+
+    public void stopAll(){
+        appService.shutdownWindowEvent();
+    }
+
+    private void setHeader(){
+        labelHeader.setText(configurationControl.getConfiguration().getLauncher().getTitle());
+    }
+
+    private void setAppList(){
+        Set<AppEntity> apps = configurationControl.getConfiguration().getApps();
+        for(AppEntity app : apps){
+
+            Button appButton = new Button(app.getName());
+            appButton.getStyleClass().add("app-container-button");
+            appButton.setOnAction(e -> {
+                if(!appButton.getStyleClass().contains("app-container-button-blocked")) {
+                    start(app);
+                }
+            });
+            if(app.getIcon()!=null){
+                logger.debug(app.getIcon().toString());
+                appButton.setStyle(
+                        "-fx-background-image: url('"+ app.getIcon().toUri()+"');" +
+                        "-fx-background-repeat: no-repeat; " +
+                        "-fx-background-position: center;" +
+                        "-fx-text-fill: transparent;"
+                );
+
+            }
+            if(app.InstancesCounterEnabled()) {
+                IntegerProperty counterValue = new SimpleIntegerProperty(0);
+                appCounters.put(app.getId(), counterValue);
+
+                Label instanceCount = new Label();
+                instanceCount.getStyleClass().add("app-container-button-counter");
+                instanceCount.textProperty().bind(counterValue.asString());
+                instanceCount.visibleProperty().bind(counterValue.greaterThan(0));
+                instanceCount.managedProperty().bind(instanceCount.visibleProperty());
+
+                StackPane fullButton = new StackPane(appButton);
+                StackPane badge = new StackPane(instanceCount);
+                badge.setAlignment(Pos.TOP_LEFT);
+                badge.setMouseTransparent(true);
+                StackPane.setMargin(instanceCount, new Insets(-8, -8, 0, 0));
+                fullButton.getChildren().add(badge);
+                appsContainer.getChildren().add(fullButton);
+            }else{
+                appsContainer.getChildren().add(appButton);
+            }
+            app_button.put(app.getId(), appButton);
+           /* IntegerProperty counterValue = new SimpleIntegerProperty(0);
+            appCounters.put(app.getId(), counterValue);
+
+            Label instanceCount = new Label();
+            instanceCount.getStyleClass().add("app-container-button-counter");
+            instanceCount.textProperty().bind(counterValue.asString());
+            instanceCount.visibleProperty().bind(counterValue.greaterThan(0));
+            instanceCount.managedProperty().bind(instanceCount.visibleProperty());
+            instanceCount.setStyle("-fx-border-color: red; -fx-border-width: 2; -fx-background-color: yellow;");
+            StackPane overlay = new StackPane(instanceCount);
+            overlay.setVisible(true);
+            overlay.visibleProperty().bind(counterValue.greaterThan(0));
+            overlay.managedProperty().bind(overlay.visibleProperty());
+            overlay.setAlignment(Pos.TOP_RIGHT);
+            overlay.setPrefSize(40, 40);
+            overlay.setStyle("-fx-border-color: blue; -fx-border-width: 2;");
+            overlay.setMouseTransparent(true);
+            appButton.setGraphic(overlay);
+
+            StackPane.setMargin(instanceCount, new Insets(-6, -6, 0, 0));
+            appButton.setContentDisplay(ContentDisplay.CENTER);
+
+            appsContainer.getChildren().add(appButton);
+            app_button.put(app.getId(), appButton);*/
+            logger.debug("Loaded app {}", app.getId());
+        }
+        logger.info("Loaded {} apps", apps.size());
+        if(!apps.isEmpty()){
+            appsContainer.getChildren().remove(appsContainerPlaceholder);
+        }
+    }
+
+    private void start(AppEntity app) {
+        appService.start(app);
+    }
+
+    public void initWindowTracking() {
+        appService.initWindowEvent();
+    }
+
+    private void subscribeToInstances(){
+        appService.getInstances().addListener((ListChangeListener<InstanceEntity>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    for (InstanceEntity instance : change.getAddedSubList()) {
+                        onInstanceAdded(instance);
+                    }
+                }
+                if (change.wasRemoved()) {
+                    for (InstanceEntity instance : change.getRemoved()) {
+                        onInstanceRemoved(instance);
+                    }
+                }
+            }
+        });
+    }
+
+    private void onInstanceAdded(InstanceEntity instance) {
+        String appId = instance.getApp().getId();
+
+        IntegerProperty counter = appCounters.get(appId);
+        if (counter != null) {
+            counter.set(counter.get() + 1);
+        }
+
+        attachStateListener(instance);
+        updateButtonState(instance);
+    }
+
+    private void onInstanceRemoved(InstanceEntity instance) {
+        String appId = instance.getApp().getId();
+
+        IntegerProperty counter = appCounters.get(appId);
+        if (counter != null) {
+            counter.set(Math.max(0, counter.get() - 1));
+        }
+
+        detachStateListener(instance);
+    }
+
+    private void attachStateListener(InstanceEntity instance) {
+        ChangeListener<InstanceEntity.State> listener = (obs, oldState, newState) ->
+                Platform.runLater(() -> {
+                    updateButtonState(instance);
+                    if(newState == InstanceEntity.State.CLOSED && instance.getHwnds().isEmpty()){
+                        appService.removeInstance(instance);
+                    }
+                });
+
+        instance.stateProperty().addListener(listener);
+        stateListeners.put(instance, listener);
+    }
+
+    private void detachStateListener(InstanceEntity instance) {
+        ChangeListener<InstanceEntity.State> listener = stateListeners.remove(instance);
+        if (listener != null) {
+            instance.stateProperty().removeListener(listener);
+        }
+    }
+
+    private void updateButtonState(InstanceEntity instance) {
+        Button button = app_button.get( instance.getApp().getId());
+        if (button == null) {
+            return;
+        }
+        logger.info("State: {},pid: {},alive: {}", instance.getState(),instance.getProcess().pid(),instance.getProcess().isAlive());
+        switch (instance.getState()) {
+            case RUNNING -> {
+                if (!button.getStyleClass().contains("app-container-button-active")) {
+                    button.getStyleClass().add("app-container-button-active");
+                }
+            }
+            case CLOSED -> {
+                button.getStyleClass().remove("app-container-button-active");
+                button.getStyleClass().remove("app-container-button-blocked");
+            }
+            case CLOSING -> {
+                button.getStyleClass().remove("app-container-button-active");
+                button.getStyleClass().add("app-container-button-closed");
+            }
+        }
+    }
+}
