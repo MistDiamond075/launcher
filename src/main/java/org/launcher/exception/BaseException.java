@@ -1,23 +1,49 @@
 package org.launcher.exception;
 
 public class BaseException extends Exception {
-    public enum Type{ERROR, WARNING}
-    Type type;
+    public enum Type{INFO,WARNING,ERROR}
+    private boolean visible = false;
+    private String message;
+    private String userMessage;
 
     public BaseException(String message) {
         super(message);
+        this.message = message;
     }
 
-    public BaseException(String message,Throwable cause) {
+    public BaseException(String message,String userMessage,Throwable cause, boolean visible) {
         super(message,cause);
+        this.visible = visible;
+        this.userMessage = userMessage;
+        this.message = message;
     }
-    public BaseException(String message, Type type) {
+    public BaseException(String message,String userMessage, boolean visible) {
         super(message);
-        this.type = type;
+        this.visible = visible;
+        this.userMessage = userMessage;
+        this.message = message;
     }
 
-    public BaseException(Throwable cause, Type type) {
+    public BaseException(Throwable cause,String userMessage,  boolean visible) {
         super(cause);
-        this.type = type;
+        this.visible = visible;
+        this.userMessage = userMessage;
+        this.message = cause.getMessage();
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public String getUserMessage() {
+        return userMessage;
+    }
+
+    @Override
+    public String toString() {
+        return "BaseException{" +
+                "visible=" + visible +
+                ", message='" + message + '\'' +
+                '}';
     }
 }

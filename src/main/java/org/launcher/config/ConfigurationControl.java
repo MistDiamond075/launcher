@@ -1,15 +1,17 @@
 package org.launcher.config;
 
-import org.launcher.config.parser.BaseParser;
+import ch.qos.logback.classic.Level;
 import org.launcher.entity.ConfigurationEntity;
+import org.launcher.entity.LoggingEntity;
+import org.launcher.exception.BaseException;
+import org.launcher.exception.EntityValidationException;
+import org.launcher.service.NotificationService;
+import org.launcher.utils.logging.AppLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,6 +27,7 @@ public class ConfigurationControl {
     private final Path configPath;
     private final Properties properties = new Properties();
     private ConfigurationEntity configuration;
+    private AppLogger appLogger = null;
     private boolean loaded = false;
 
     public ConfigurationControl(String configFile) {
@@ -44,6 +47,7 @@ public class ConfigurationControl {
             return;
         }
         reload();
+        //loaded = false;
     }
 
     public ConfigurationEntity getConfiguration() {
@@ -54,10 +58,25 @@ public class ConfigurationControl {
         try {
             configuration = objectMapper.getMapper().readValue(configPath.toFile(), ConfigurationEntity.class);
             loaded = true;
+            if(appLogger != null){
+                appLogger.reload(configuration);
+            }else{
+                appLogger = new AppLogger(configuration);
+            }
             logger.info("Configuration reloaded");
+            NotificationService.show("conf.load.success","Configuration reloaded", BaseException.Type.INFO);
         } catch (JacksonException e) {
             logger.error("Failed to parse configuration: {}", e.getMessage());
             logger.debug("Details: ", e);
+            NotificationService.show("conf.load.error","Failed to load configuration", BaseException.Type.ERROR);
+            loaded = false;
+        }
+        try{
+            configuration.validate();
+        }catch(EntityValidationException e){
+            logger.error("Configuration invalid: {}", e.getMessage());
+            logger.debug("Details: ", e);
+            NotificationService.show("conf.load.error","Failed to load configuration", BaseException.Type.ERROR);
             loaded = false;
         }
     }
@@ -75,6 +94,7 @@ public class ConfigurationControl {
             return Path.of(properties.getProperty("path.config"));
         } catch (IOException e) {
             logger.error("Failed to load default configuration: {}", e.getMessage());
+            NotificationService.show("conf.load.error","Failed to load configuration", BaseException.Type.ERROR);
             logger.debug("Details: ", e);
             return null;
         }

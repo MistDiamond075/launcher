@@ -2,13 +2,37 @@
     -fx-padding:10px 0px 0px 0px;
     -fx-font-weight: bold;
     -fx-text-fill: #ffffff;
+    -fx-font-size: 30px;
+}
+.wait-label{
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 30px;
+}
+.system-message-container{
+    -fx-background-color: rgba(0, 0, 0, 0.78);
+    -fx-background-radius: 17px;
+}
+.system-message-text{
+    -fx-font-size: 15px;
+    -fx-text-fill: #ffffff;
+}
+.system-message-info{
+    -fx-text-fill: #31ec02;
+}
+.system-message-warning{
+    -fx-text-fill: #ffea00;
+}
+.system-message-error{
+    -fx-text-fill: #d52020;
 }
 .main-container {
     -fx-background-color: linear-gradient( rgb(130, 35, 179), rgb(35, 22, 117));
 }
 .app-container-button{
-    -fx-background-color: #6c6c6c;
+    -fx-background-color: #5c99af;
     -fx-pref-height: 200px;
+    -fx-pref-width: 200px;
     -fx-text-fill: #000000;
     -fx-cursor: hand;
 }
@@ -21,15 +45,22 @@
     -fx-effect: dropshadow(gaussian, rgb(255, 101, 219), 10, 0, 0, 0);
 }
 .app-container-button-active{
-    -fx-background-color: #5c99af;
+    -fx-background-color: #c853a6;
+}
+.app-container-button-disabled{
+    -fx-cursor: default;
+    -fx-background-color: #6c6c6c;
+}
+.app-container-button-disabled:hover{
+    -fx-effect: none;
 }
 .app-container-button-blocked{
     -fx-cursor: wait;
     -fx-background-color: #d61f1f;
 }
 .app-container-button-active:hover{
-    -fx-background-color: #5c99af;
-    -fx-effect: dropshadow(gaussian, rgb(0, 255, 224), 10, 0, 0, 0);
+    -fx-background-color: #cf3ba5;
+    -fx-effect: dropshadow(gaussian, rgb(230, 1, 220), 10, 0, 0, 0);
 }
 .app-container-button-counter{
    /* -fx-text-fill: black;

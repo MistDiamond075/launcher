@@ -28,10 +28,24 @@
       "id": "chrome2",
       "name": "google chrome",
       "description": "demo browser test",
-      "icon": null,
+      "icon": "C:\\Users\\egoru\\Downloads\\_lKhEEL0B88.jpg",
       "arguments": "--new-window\"",
       "workingDirectory": "C:\\Program Files\\Google\\Chrome\\Application",
-      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "path": "C:\\Program Files\\Google\\Chrome\\Applicaion\\chrome.exe",
+      "enabled": true,
+      "allowMultipleInstances": false,
+      "enableInstancesCounter": false,
+      "restartOnError": true,
+      "maxRuntime": null
+    },
+    {
+      "id": "notepad",
+      "name": "notepad",
+      "description": "demo npad test",
+      "icon": null,
+      "arguments": "",
+      "workingDirectory": "C:\\Windows\\System32",
+      "path": "C:\\Windows\\System32\\notepad.exe",
       "enabled": true,
       "allowMultipleInstances": false,
       "enableInstancesCounter": false,
@@ -40,13 +54,14 @@
     }
   ],
   "admin": {
-      "password": "123",
+      "password": "0000",
     "sessionTimeout": null
   },
   "logging": {
       "level": "DEBUG",
-      "printToFile": false,
-      "log": "CONSOLE",
-      "filePath": ""
+      "log": "console",
+      "path": "C:\\Users\\egoru\\OneDrive\\Рабочий стол\\launcher\\log.txt",
+      "colorsEnabled": true,
+      "maxFileHistory": 30
   }
 }

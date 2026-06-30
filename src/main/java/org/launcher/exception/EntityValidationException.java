@@ -5,15 +5,15 @@ public class EntityValidationException extends BaseException {
         super(message);
     }
 
-    public EntityValidationException(String message, Throwable cause) {
-        super(message, cause);
+    public EntityValidationException(String message,String userMessage, Throwable cause, boolean visible) {
+        super(message,userMessage, cause,visible);
     }
 
-    public EntityValidationException(String message, Type type) {
-        super(message, type);
+    public EntityValidationException(String message,String userMessage, boolean visible) {
+        super(message,userMessage,visible);
     }
 
-    public EntityValidationException(Throwable cause, Type type) {
-        super(cause, type);
+    public EntityValidationException(Throwable cause,String userMessage, boolean visible) {
+        super(cause, userMessage,visible);
     }
 }

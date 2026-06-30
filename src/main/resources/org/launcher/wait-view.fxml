@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml" styleClass="main-container" fx:controller="org.launcher.controller.WaitController">
+    <top>
+        <HBox alignment="CENTER" prefWidth="Infinity">
+            <Label text="_header_" styleClass="header" fx:id="labelHeader"/>
+        </HBox>
+    </top>
+    <center>
+        <Label styleClass="wait-label">Позовите системного администратора</Label>
+    </center>
+</BorderPane>

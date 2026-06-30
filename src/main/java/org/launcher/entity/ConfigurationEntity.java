@@ -2,11 +2,12 @@ package org.launcher.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.launcher.exception.EntityValidationException;
 
 import java.util.Objects;
 import java.util.Set;
 
-public class ConfigurationEntity {
+public class ConfigurationEntity implements BaseEntity {
     private final Set<AppEntity> apps;
     private final  LauncherEntity launcher;
     private final LoggingEntity logging;
@@ -34,6 +35,16 @@ public class ConfigurationEntity {
 
     public AdminEntity getAdmin() {
         return admin;
+    }
+
+    @Override
+    public void validate() throws EntityValidationException {
+        for (AppEntity app : apps) {
+            app.validate();
+        }
+        admin.validate();
+        logging.validate();
+        launcher.validate();
     }
 
     @Override

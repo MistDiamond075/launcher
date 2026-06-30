@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import org.launcher.entity.AppEntity;
 import org.launcher.entity.InstanceEntity;
 import org.launcher.events.ForeignWindowEvent;
+import org.launcher.exception.BaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,7 @@ public class AppService {
             }
             if(started.containsKey(entity) && !entity.isAllowMultipleInstances()) {
                 logger.warn("Application {} allows only one instance", entity.getId());
+                NotificationService.show("service.apps.app.instance_start.not_allowed","Only one instance allowed", BaseException.Type.WARNING);
                 return;
             }
             process = processBuilder.start();
@@ -41,9 +43,11 @@ public class AppService {
                 foreignWindowEvent.register(proc);
             }
             logger.info("Started application {}, PID: {}",entity.getId(),process.pid());
+            NotificationService.show("service.apps.app.start.success","App started", BaseException.Type.INFO);
         } catch (NullPointerException | IOException e) {
             logger.error("Failed to start process: {}",e.getMessage());
             logger.debug("Details: ", e);
+            NotificationService.show("service.apps.app.start.fail","Failed to start app",BaseException.Type.ERROR);
         }
     }
 

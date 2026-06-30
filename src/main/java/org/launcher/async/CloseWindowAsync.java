@@ -8,7 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class CloseWindowAsync {
     private static final Logger logger = LoggerFactory.getLogger(CloseWindowAsync.class);
@@ -19,15 +21,16 @@ public class CloseWindowAsync {
     public CloseWindowAsync() {}
 
     public void scheduleClose(final InstanceEntity instance, final long delay,final long period, final TimeUnit unit) {
-        Platform.runLater(() -> {
-       //     instance.setState(InstanceEntity.State.CLOSING);
-        });
-        scheduler.scheduleAtFixedRate(() ->{
-                if(instance.getHwnds().isEmpty()){
-                    logger.debug("-------------------------------- pid={},alive={},hwnds={},state={} ---------------------------------------------",instance.getProcess().pid(),instance.getProcess().isAlive(),instance.getHwnds(),instance.getState());
-                    Platform.runLater(() -> instance.setState(InstanceEntity.State.CLOSED));
-                }
-        }, delay,period, unit);
+        AtomicReference<ScheduledFuture<?>> ref = new AtomicReference<>();
+
+        ref.set(scheduler.scheduleAtFixedRate(() -> {
+            if (instance.getHwnds().isEmpty()) {
+                Platform.runLater(() ->
+                        instance.setState(InstanceEntity.State.CLOSED));
+
+                ref.get().cancel(false);
+            }
+        }, delay, period, unit));
     }
 
     public void scheduleClose(final InstanceEntity instance) {

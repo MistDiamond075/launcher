@@ -13,10 +13,9 @@ public class AdminEntity implements BaseEntity {
     @JsonCreator
     public AdminEntity(
             @JsonProperty("password") String password,
-            @JsonProperty("sessionTimeout") Integer sessionTimeout) throws EntityValidationException {
+            @JsonProperty("sessionTimeout") Integer sessionTimeout) {
         this.password = password;
         this.sessionTimeout = sessionTimeout;
-        validate();
     }
 
     public String getPassword() {

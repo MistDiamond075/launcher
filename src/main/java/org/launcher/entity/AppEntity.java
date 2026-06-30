@@ -4,20 +4,26 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.launcher.exception.EntityValidationException;
 import org.launcher.utils.PathManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
 public class AppEntity implements BaseEntity{
+    private static final Logger logger = LoggerFactory.getLogger(AppEntity.class);
     private final String id;
     private final String name;
     private final String description;
-    private final Path icon;
+    private Path icon;
     private final Path path;
     private final String arguments;
     private final Path workingDirectory;
-    private final boolean enabled;
+    private boolean enabled;
     private final boolean allowMultipleInstances;
     private final boolean enableInstancesCounter;
     private final boolean restartOnError;
@@ -36,7 +42,7 @@ public class AppEntity implements BaseEntity{
             @JsonProperty("allowMultipleInstances") boolean allowMultipleInstances,
             @JsonProperty("enableInstancesCounter") boolean enableInstancesCounter,
             @JsonProperty("restartOnError") boolean restartOnError,
-            @JsonProperty("maxRuntime") Integer maxRuntime) throws EntityValidationException {
+            @JsonProperty("maxRuntime") Integer maxRuntime) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -49,7 +55,6 @@ public class AppEntity implements BaseEntity{
         this.enableInstancesCounter = enableInstancesCounter;
         this.restartOnError = restartOnError;
         this.maxRuntime = maxRuntime;
-        validate();
     }
 
     public String getId() {
@@ -103,14 +108,33 @@ public class AppEntity implements BaseEntity{
     @Override
     public void validate() throws EntityValidationException {
         if(this.path==null || this.workingDirectory==null){
-            throw new EntityValidationException("path and workingDirectory are required");
-        }
-        if(!Files.exists(this.path)){
-            throw new EntityValidationException("App "+this.path+" not found");
-        }else if(!Files.exists(this.path)){
-            throw new EntityValidationException("Working directory "+this.workingDirectory+" for "+this.path+" not found");
-        }else if(icon!=null && !Files.exists(this.path)){
-            throw new EntityValidationException("Icon "+this.icon+" for "+this.path+" not found");
+            //throw new EntityValidationException("path and workingDirectory are required");
+            logger.error("path and workingDirectory are required for {}", id);
+            this.enabled = false;
+        }else if(!Files.exists(this.path) || Files.isDirectory(this.path)){
+            // throw new EntityValidationException("App "+this.path+" not found");
+            logger.error("App {} not found", this.path);
+            this.enabled = false;
+        }else if(!Files.exists(this.workingDirectory) || !Files.isDirectory(this.workingDirectory)){
+           // throw new EntityValidationException("Working directory "+this.workingDirectory+" for "+this.path+" not found");
+            logger.error("Working directory {} for {} not found", this.workingDirectory, this.path);
+        }else if(icon!=null && !Files.exists(this.icon)){
+            //throw new EntityValidationException("Icon "+this.icon+" for "+this.path+" not found");
+            logger.error("Icon {} for {} not found",this.icon,this.path);
+            this.icon = null;
+        }else if(icon!=null && Files.isDirectory(this.icon)){
+            logger.error("Icon {} for {} is a directory",this.icon,this.path);
+            this.icon = null;
+        }else if(icon!=null){
+            try {
+                boolean isImage = ImageIO.read(icon.toFile()) != null;
+                if(!isImage){
+                    throw new EntityValidationException("Invalid icon " + icon);
+                }
+            } catch (IOException e) {
+                logger.error("Error reading icon {}", icon, e);
+                throw new EntityValidationException("Invalid icon " + icon);
+            }
         }
     }
 

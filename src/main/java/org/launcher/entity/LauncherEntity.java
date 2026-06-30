@@ -94,5 +94,6 @@ public class LauncherEntity implements BaseEntity{
 
     @Override
     public void validate() {
+
     }
 }

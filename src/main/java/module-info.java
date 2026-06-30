@@ -24,4 +24,5 @@ module org.launcher {
     exports org.launcher.exception;
     exports org.launcher.service;
     exports org.launcher.service.win;
+    opens org.launcher.utils.logging to ch.qos.logback.core;
 }

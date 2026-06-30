@@ -5,15 +5,15 @@ public class ConfigurationException extends BaseException {
         super(message);
     }
 
-    public ConfigurationException(String message, Throwable cause) {
-        super(message,cause);
+    public ConfigurationException(String message,String userMessage, Throwable cause, boolean visible) {
+        super(message,userMessage,cause,visible);
     }
 
-    public ConfigurationException(String message, Type type) {
-        super(message, type);
+    public ConfigurationException(String message,String userMessage, boolean visible) {
+        super(message, userMessage, visible);
     }
 
-    public ConfigurationException(Throwable cause, Type type) {
-        super(cause, type);
+    public ConfigurationException(Throwable cause,String userMessage, boolean visible) {
+        super(cause, userMessage, visible);
     }
 }

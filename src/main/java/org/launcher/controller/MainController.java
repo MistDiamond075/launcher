@@ -11,19 +11,25 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.entity.InstanceEntity;
+import org.launcher.exception.BaseException;
 import org.launcher.service.AppService;
 import org.launcher.entity.AppEntity;
+import org.launcher.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.*;
 
 public class MainController {
+    public enum SystemMessageLevel {ERROR, WARNING, INFO}
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
     private final ConfigurationControl configurationControl;
     private final AppService appService;
@@ -36,6 +42,12 @@ public class MainController {
     private Label appsContainerPlaceholder;
     @FXML
     private FlowPane appsContainer;
+    @FXML
+    private Label systemMessage;
+    @FXML
+    private HBox systemMessageContainer;
+    @FXML
+    private StackPane rootStackPane;
 
     public MainController(ConfigurationControl configurationControl) {
         this.configurationControl = configurationControl;
@@ -47,6 +59,15 @@ public class MainController {
         setHeader();
         setAppList();
         subscribeToInstances();
+        NotificationService.initialize(systemMessageContainer, systemMessage);
+        systemMessage.maxWidthProperty().bind(
+                systemMessageContainer.widthProperty().multiply(0.8)
+        );
+        systemMessageContainer.maxWidthProperty().bind(
+                rootStackPane.widthProperty().multiply(0.8)
+        );
+        systemMessageContainer.setPrefWidth(100);
+
         logger.debug("MainController initialized");
     }
 
@@ -65,7 +86,7 @@ public class MainController {
             Button appButton = new Button(app.getName());
             appButton.getStyleClass().add("app-container-button");
             appButton.setOnAction(e -> {
-                if(!appButton.getStyleClass().contains("app-container-button-blocked")) {
+                if(!appButton.getStyleClass().contains("app-container-button-blocked") && !appButton.getStyleClass().contains("app-container-button-disabled")) {
                     start(app);
                 }
             });
@@ -99,34 +120,14 @@ public class MainController {
             }else{
                 appsContainer.getChildren().add(appButton);
             }
+            if(!app.isEnabled()){
+                appButton.getStyleClass().add("app-container-button-disabled");
+            }
             app_button.put(app.getId(), appButton);
-           /* IntegerProperty counterValue = new SimpleIntegerProperty(0);
-            appCounters.put(app.getId(), counterValue);
-
-            Label instanceCount = new Label();
-            instanceCount.getStyleClass().add("app-container-button-counter");
-            instanceCount.textProperty().bind(counterValue.asString());
-            instanceCount.visibleProperty().bind(counterValue.greaterThan(0));
-            instanceCount.managedProperty().bind(instanceCount.visibleProperty());
-            instanceCount.setStyle("-fx-border-color: red; -fx-border-width: 2; -fx-background-color: yellow;");
-            StackPane overlay = new StackPane(instanceCount);
-            overlay.setVisible(true);
-            overlay.visibleProperty().bind(counterValue.greaterThan(0));
-            overlay.managedProperty().bind(overlay.visibleProperty());
-            overlay.setAlignment(Pos.TOP_RIGHT);
-            overlay.setPrefSize(40, 40);
-            overlay.setStyle("-fx-border-color: blue; -fx-border-width: 2;");
-            overlay.setMouseTransparent(true);
-            appButton.setGraphic(overlay);
-
-            StackPane.setMargin(instanceCount, new Insets(-6, -6, 0, 0));
-            appButton.setContentDisplay(ContentDisplay.CENTER);
-
-            appsContainer.getChildren().add(appButton);
-            app_button.put(app.getId(), appButton);*/
             logger.debug("Loaded app {}", app.getId());
         }
         logger.info("Loaded {} apps", apps.size());
+        NotificationService.show(MessageFormat.format("controller.main.apps.count",apps.size()),"Apps loaded", BaseException.Type.INFO);
         if(!apps.isEmpty()){
             appsContainer.getChildren().remove(appsContainerPlaceholder);
         }
@@ -205,7 +206,7 @@ public class MainController {
         if (button == null) {
             return;
         }
-        logger.info("State: {},pid: {},alive: {}", instance.getState(),instance.getProcess().pid(),instance.getProcess().isAlive());
+        //logger.info("State: {},pid: {},alive: {}", instance.getState(),instance.getProcess().pid(),instance.getProcess().isAlive());
         switch (instance.getState()) {
             case RUNNING -> {
                 if (!button.getStyleClass().contains("app-container-button-active")) {

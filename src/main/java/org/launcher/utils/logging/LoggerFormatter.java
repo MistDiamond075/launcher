@@ -1,4 +1,4 @@
-package org.launcher.utils;
+package org.launcher.utils.logging;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
@@ -14,15 +14,20 @@ import java.time.format.DateTimeFormatter;
 
 public class LoggerFormatter extends LayoutBase<ILoggingEvent> {
     private Colors colors;
+    private boolean colorsEnabled = false;
 
-    public LoggerFormatter(){
+    public LoggerFormatter() {
         colors = ColorsFactory.getColors("ansi");
+    }
+
+    public void setColorsEnabled(boolean colorsEnabled) {
+        this.colorsEnabled = colorsEnabled;
     }
 
     @Override
     public String doLayout(ILoggingEvent event) {
         String color;
-        DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy HH:mm:ss VV");
+        DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
         switch (event.getLevel().levelStr) {
             case "ERROR" -> color = colors.RED();
             case "WARN"  -> color = colors.YELLOW();
@@ -35,10 +40,21 @@ public class LoggerFormatter extends LayoutBase<ILoggingEvent> {
         String timestamp = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
                 .format(TIME_FORMAT);
 
-        StringBuilder sb = new StringBuilder();
-
         String loggerName = shortenLoggerName(event.getLoggerName());
 
+        StringBuilder sb = colorsEnabled ?
+                buildTextWithColors(timestamp, color, event, loggerName) :
+                buildTextWithoutColors(timestamp, event, loggerName);
+
+        return sb.toString();
+    }
+
+    private String shortenLoggerName(String loggerName) {
+        return loggerName!=null ? loggerName.replace("org.launcher.","") : null;
+    }
+
+    private StringBuilder buildTextWithColors(String timestamp, String color, ILoggingEvent event, String loggerName) {
+        StringBuilder sb = new StringBuilder();
         sb.append(colors.CYAN())
                 .append("[").append(timestamp).append("] ")
                 .append(colors.RESET())
@@ -61,10 +77,23 @@ public class LoggerFormatter extends LayoutBase<ILoggingEvent> {
                     .append(colors.RESET());
         }
 
-        return sb.toString();
+        return sb;
     }
 
-    private String shortenLoggerName(String loggerName) {
-        return loggerName!=null ? loggerName.replace("org.launcher.","") : null;
+    private StringBuilder buildTextWithoutColors(String timestamp,  ILoggingEvent event, String loggerName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(timestamp).append("] ")
+                .append("[").append(event.getLevel()).append("] ")
+                .append(loggerName)
+                .append(" - ")
+                .append(event.getFormattedMessage())
+                .append("\n");
+
+        IThrowableProxy throwableProxy = event.getThrowableProxy();
+        if (throwableProxy != null) {
+            sb.append(ThrowableProxyUtil.asString(throwableProxy));
+        }
+
+        return sb;
     }
 }
