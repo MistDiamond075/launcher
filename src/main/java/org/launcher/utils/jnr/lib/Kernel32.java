@@ -1,4 +1,4 @@
-package org.launcher.service.win;
+package org.launcher.utils.jnr.lib;
 
 import jnr.ffi.LibraryLoader;
 

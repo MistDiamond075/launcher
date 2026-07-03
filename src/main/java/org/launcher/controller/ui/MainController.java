@@ -1,4 +1,4 @@
-package org.launcher.controller;
+package org.launcher.controller.ui;
 
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
@@ -26,7 +26,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.*;
 
 public class MainController {
     public enum SystemMessageLevel {ERROR, WARNING, INFO}

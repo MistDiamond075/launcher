@@ -55,13 +55,14 @@
   ],
   "admin": {
       "password": "0000",
-    "sessionTimeout": null
+    "sessionTimeout": null,
+    "keyCombination": "Alt+S"
   },
   "logging": {
       "level": "DEBUG",
       "log": "console",
-      "path": "C:\\Users\\egoru\\OneDrive\\Рабочий стол\\launcher\\log.txt",
-      "colorsEnabled": true,
+      "path": "D:\\log.txt",
+      "colorsEnabled": false,
       "maxFileHistory": 30
   }
 }

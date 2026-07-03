@@ -1,4 +1,4 @@
-package org.launcher.controller;
+package org.launcher.controller.ui;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -18,6 +18,7 @@ public class WaitController {
 
     @FXML
     public void initialize() {
-        labelHeader.setText(configuration.getLauncher().getTitle());
+        String title = configuration != null ? configuration.getLauncher().getTitle() : "undefined title";
+        labelHeader.setText(title);
     }
 }

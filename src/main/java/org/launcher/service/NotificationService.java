@@ -52,9 +52,13 @@ public class NotificationService {
                     }
                     default -> label.getStyleClass().add("system-message-neutral");
                 }
-                systemMessageExecutor.schedule(() -> {
+                if(delay!=null) {
+                    systemMessageExecutor.schedule(() -> {
+                        container.setVisible(false);
+                    }, delay, TimeUnit.SECONDS);
+                }else {
                     container.setVisible(false);
-                }, delay, TimeUnit.SECONDS);
+                }
             });
         }
     }

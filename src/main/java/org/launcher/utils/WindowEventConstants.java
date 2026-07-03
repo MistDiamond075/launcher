@@ -13,4 +13,10 @@ public class WindowEventConstants {
     public static final int EVENT_OBJECT_HIDE    = 0x8003;
     public static final int EVENT_SYSTEM_MINIMIZESTART = 0x0016;
     public static final int EVENT_SYSTEM_MINIMIZEEND   = 0x0017;
+    public static final int WM_MOUSEACTIVATE = 33;
+    public static final int MA_ACTIVATE = 1;
+    public static final int MA_ACTIVATEANDEAT = 2;
+    public static final int MA_NOACTIVATE = 3;
+    public static final int MA_NOACTIVATEANDEAT = 4;
+    public static final int WM_NCDESTROY  = 130;
 }

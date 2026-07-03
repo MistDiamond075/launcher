@@ -1,5 +1,6 @@
 module org.launcher {
     requires javafx.controls;
+    requires javafx.graphics;
     requires javafx.fxml;
 
     requires com.dlsc.formsfx;
@@ -15,7 +16,7 @@ module org.launcher {
     exports org.launcher;
 
     opens org.launcher.utils to ch.qos.logback.core;
-    opens org.launcher to javafx.fxml;
+    opens org.launcher;
     exports org.launcher.controller;
     opens org.launcher.controller to javafx.fxml, tools.jackson.databind;
     exports org.launcher.entity.properties;
@@ -23,6 +24,9 @@ module org.launcher {
     exports org.launcher.entity;
     exports org.launcher.exception;
     exports org.launcher.service;
-    exports org.launcher.service.win;
     opens org.launcher.utils.logging to ch.qos.logback.core;
+    exports org.launcher.utils.jnr.lib;
+    exports org.launcher.utils.jnr.callback;
+    exports org.launcher.controller.ui;
+    opens org.launcher.controller.ui to javafx.fxml, tools.jackson.databind;
 }

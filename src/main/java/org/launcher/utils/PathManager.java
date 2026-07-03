@@ -11,4 +11,13 @@ public class PathManager {
         Path p = Paths.get(path);
         return p.toAbsolutePath().normalize();
     }
+
+    public static Path getAppDir() {
+        return ProcessHandle.current()
+                .info()
+                .command()
+                .map(Paths::get)
+                .map(Path::getParent)
+                .orElse(null);
+    }
 }

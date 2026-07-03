@@ -1,34 +1,54 @@
 package org.launcher;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.config.Localization;
-import org.launcher.controller.MainController;
-import org.launcher.controller.WaitController;
+import org.launcher.controller.KeyboardController;
+import org.launcher.controller.ui.MainController;
+import org.launcher.controller.MainWindowController;
+import org.launcher.controller.ui.WaitController;
 import org.launcher.service.NotificationService;
+import org.launcher.utils.PathManager;
+import org.launcher.utils.jnr.lib.User32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.sun.glass.ui.Window;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MainApp extends Application {
     private static Logger logger;
     private ConfigurationControl configurationControl;
     private MainController mainController;
     private WaitController waitController;
+    private MainWindowController mainWindowController;
+    private KeyboardController keyboardController;
+    private Thread keyloggerThread;
 
     @Override
     public void init() throws Exception {
-        configurationControl = new ConfigurationControl(null);
+        Parameters parameters = getParameters();
+        Map<String, String> named = parameters.getNamed();
+        String pathToConfig = named.getOrDefault("config", null);
+        if (pathToConfig == null) {
+            Path nearConfig = PathManager.getAppDir().resolve("config.json");
+            pathToConfig = Files.exists(nearConfig) ? nearConfig.toAbsolutePath().toString() : null;
+        }
+        configurationControl = new ConfigurationControl(pathToConfig);
+        NotificationService.show("app.startup","Starting launcher...",2L, null);
+        mainWindowController = new MainWindowController();
+        keyboardController = new KeyboardController(configurationControl.getConfiguration().getAdmin().getCombination());
         logger = LoggerFactory.getLogger(MainApp.class);
         Localization.load();
         logger.info("Launcher started");
@@ -39,12 +59,16 @@ public class MainApp extends Application {
     public void stop() throws Exception {
         NotificationService.stopExecutor();
         stopAllControllers();
+        keyboardController.stop();
+        keyloggerThread.interrupt();
         super.stop();
         logger.info("Launcher stopped");
     }
 
     @Override
     public void start(Stage stage) throws IOException {
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.setTitle("Launcher");
         reloadScene(stage,null);
     }
     //"C:\\Users\\egoru\\Downloads\\_lKhEEL0B88.jpg",
@@ -52,8 +76,6 @@ public class MainApp extends Application {
     public void reloadScene(Stage stage,String viewType){
         try {
             stopAllControllers();
-            KeyCombination exitCombination =
-                    new KeyCodeCombination(KeyCode.S, KeyCombination.ALT_DOWN);
 
             if(viewType == null) {
                 viewType = configurationControl.isLoaded() ? "main" : "wait";
@@ -65,15 +87,18 @@ public class MainApp extends Application {
             Scene scene = new Scene(fxmlLoader.load());
             scene.getStylesheets().add(Objects.requireNonNull(MainApp.class.getResource("css/main.css")).toExternalForm());
             stage.setScene(scene);
-            //stage.setAlwaysOnTop(true);
-            scene.setOnKeyPressed(event -> {
-                logger.info("Pressed: {}", event.getCode());
-                if (exitCombination.match(event)) {
-                    stage.close();
-                }
-            });
             preventExit(stage);
             stage.show();
+            Platform.runLater(() ->{
+                //Pointer hwnd_ptr = User32.INSTANCE.GetForegroundWindow();
+                long hwnd = findWindow(stage);//hwnd_ptr.address();//getHwnd();
+                mainWindowController.setHwnd(hwnd);
+                applyNoActivate(hwnd);
+            });
+            keyloggerThread = new Thread(() -> keyboardController.start());
+            keyloggerThread.setDaemon(true);
+            keyloggerThread.setName("KeyloggerThread");
+            keyloggerThread.start();
             if(configurationControl.isLoaded()) {
                 mainController = fxmlLoader.getController();
                 mainController.initWindowTracking();
@@ -86,7 +111,44 @@ public class MainApp extends Application {
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
+    }
+
+    private long getHwnd() {
+        for (Window w : Window.getWindows()) {
+            logger.info(
+                    "hwnd={}, visible={}, x={}, y={}, w={}, h={}",
+                    w.getNativeWindow(),
+                    w.isVisible(),
+                    w.getX(),
+                    w.getY(),
+                    w.getWidth(),
+                    w.getHeight()
+            );
+            if (w.isVisible()) {
+                return w.getNativeWindow();
+            }
+        }
+        throw new IllegalStateException("JavaFX window not found");
+    }
+
+    public void applyNoActivate(long hwnd) {
+        int GWL_EXSTYLE = -20;
+        int WS_EX_NOACTIVATE = 0x08000000;
+
+        long exStyle = User32.INSTANCE.GetWindowLongPtrA(hwnd, GWL_EXSTYLE);
+
+        exStyle |= WS_EX_NOACTIVATE;
+
+        User32.INSTANCE.SetWindowLongPtrA(hwnd, GWL_EXSTYLE, exStyle);
+
+        // обязательно обновить window state
+        User32.INSTANCE.SetWindowPos(
+                hwnd,
+                0,
+                0, 0, 0, 0,
+                0x0020 | 0x0001 | 0x0002 // FRAME_CHANGED | NO_MOVE | NO_SIZE
+        );
     }
 
     private void makeControllers(FXMLLoader fxmlLoader,String type) {
@@ -100,10 +162,11 @@ public class MainApp extends Application {
     }
 
     private void preventExit(Stage stage) {
-        stage.setFullScreen(true);
+        stage.setFullScreen(false);
+        stage.setMaximized(true);
         stage.setOnCloseRequest(Event::consume);
-        stage.setAlwaysOnTop(true);
-        stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+        stage.setAlwaysOnTop(false);
+        stage.toBack();
     }
 
     private void stopAllControllers(){
@@ -114,5 +177,34 @@ public class MainApp extends Application {
         if(waitController != null) {
             waitController = null;
         }
+    }
+
+    private long findWindow(Stage stage) {
+        long pid = ProcessHandle.current().pid();
+        String title = stage.getTitle();
+
+        AtomicLong result = new AtomicLong();
+
+        User32.INSTANCE.EnumWindows((hWnd, data) -> {
+            int[] p = new int[1];
+            User32.INSTANCE.GetWindowThreadProcessId(hWnd, p);
+
+            if (p[0] != pid) {
+                return 1;
+            }
+
+            char[] buf = new char[512];
+            int len = User32.INSTANCE.GetWindowTextW(hWnd, buf, buf.length);
+            String windowTitle = new String(buf, 0, len);
+
+            if (title.equals(windowTitle)) {
+                result.set(hWnd.address());
+                return 0;
+            }
+
+            return 1;
+        }, null);
+
+        return result.get();
     }
 }
