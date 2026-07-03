@@ -8,6 +8,9 @@ public class PathManager {
         if(path == null || path.isBlank()){
             return null;
         }
+        if(path.contains("?appd?")){
+            path = path.replace("?appd?", getAppDir().toString());
+        }
         Path p = Paths.get(path);
         return p.toAbsolutePath().normalize();
     }
