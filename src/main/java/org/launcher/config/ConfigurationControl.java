@@ -1,11 +1,8 @@
 package org.launcher.config;
 
-import ch.qos.logback.classic.Level;
 import org.launcher.MainApp;
 import org.launcher.entity.ConfigurationEntity;
-import org.launcher.entity.LoggingEntity;
 import org.launcher.exception.BaseException;
-import org.launcher.exception.ConfigurationException;
 import org.launcher.exception.EntityValidationException;
 import org.launcher.service.NotificationService;
 import org.launcher.utils.logging.AppLogger;
@@ -15,21 +12,16 @@ import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Properties;
 
 public class ConfigurationControl {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationControl.class);
-    private final Path defaultConfig = Path.of("src/main/resources/defaults.properties");
     private final ObjectMapperConfiguration objectMapper = new ObjectMapperConfiguration();
     private boolean useDefaultConfig = false;
     private Path configPath = null;
-    private final Properties properties = new Properties();
     private ConfigurationEntity configuration;
     private AppLogger appLogger = null;
     private boolean loaded = false;

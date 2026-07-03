@@ -1,4 +1,4 @@
-package org.launcher.utils;
+package org.launcher.utils.constants;
 
 public class LauncherWindowConstants {
     public static final int GWL_EXSTYLE = -20;

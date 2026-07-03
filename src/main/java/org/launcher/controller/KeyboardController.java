@@ -3,8 +3,6 @@ package org.launcher.controller;
 import javafx.application.Platform;
 import jnr.ffi.Memory;
 import jnr.ffi.Pointer;
-import org.launcher.MainApp;
-import org.launcher.config.Localization;
 import org.launcher.exception.BaseException;
 import org.launcher.service.NotificationService;
 import org.launcher.utils.jnr.callback.LowLevelKeyboardProc;
@@ -16,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.launcher.utils.KeyboardEventConstants.*;
+import static org.launcher.utils.constants.KeyboardEventConstants.*;
 
 public class KeyboardController {
     private static final Logger logger = LoggerFactory.getLogger(KeyboardController.class);
@@ -32,17 +30,22 @@ public class KeyboardController {
 
     public void start() {
         proc = (nCode, wParam, lParam) -> {
+            logger.debug(
+                    "msg={}, vk={}, scan={}, flags={}",
+                    wParam.address(),
+                    lParam.getInt(0),
+                    lParam.getInt(4),
+                    lParam.getInt(8)
+            );
             if (nCode >= 0) {
                 int vk = normalizeVk(lParam.getInt(0));
 
-                switch ((int) wParam) {
-                    case WM_KEYDOWN ->{}
-                    case WM_SYSKEYDOWN -> {
+                switch ((int) wParam.address()) {
+                    case WM_SYSKEYDOWN,WM_KEYDOWN -> {
                         boolean firstPress = pressed.add(vk);
                         logger.debug("firstpress={}, vk={},pressed={}, hotkey={}", firstPress, vk,pressed, hotkey);
                         if (firstPress && pressed.equals(hotkey)) {
                             try {
-                                //System.exit(0);
                                 NotificationService.show("app.shutdown","Shutting down...", null,BaseException.Type.INFO);
                                 Platform.runLater(Platform::exit);
                             } catch (Exception e) {
@@ -51,10 +54,7 @@ public class KeyboardController {
                         }
                     }
 
-                    case WM_KEYUP ->{}
-                    case WM_SYSKEYUP ->{
-                        pressed.remove(vk);
-                    }
+                    case WM_SYSKEYUP, WM_KEYUP -> pressed.remove(vk);
                 }
             }
 

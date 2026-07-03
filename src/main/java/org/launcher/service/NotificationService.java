@@ -53,9 +53,7 @@ public class NotificationService {
                     default -> label.getStyleClass().add("system-message-neutral");
                 }
                 if(delay!=null) {
-                    systemMessageExecutor.schedule(() -> {
-                        container.setVisible(false);
-                    }, delay, TimeUnit.SECONDS);
+                    systemMessageExecutor.schedule(() -> container.setVisible(false), delay, TimeUnit.SECONDS);
                 }else {
                     container.setVisible(false);
                 }

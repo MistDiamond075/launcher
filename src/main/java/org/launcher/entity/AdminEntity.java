@@ -3,7 +3,7 @@ package org.launcher.entity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.launcher.exception.EntityValidationException;
-import org.launcher.utils.KeyboardEventConstants;
+import org.launcher.utils.constants.KeyboardEventConstants;
 
 import java.util.HashSet;
 import java.util.Objects;

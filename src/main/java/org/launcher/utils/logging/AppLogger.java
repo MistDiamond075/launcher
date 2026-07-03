@@ -5,7 +5,6 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
-import ch.qos.logback.core.util.StatusPrinter;
 import org.launcher.entity.ConfigurationEntity;
 import org.launcher.entity.LoggingEntity;
 import org.slf4j.LoggerFactory;

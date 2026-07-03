@@ -1,4 +1,4 @@
-package org.launcher.utils;
+package org.launcher.utils.constants;
 
 public class WindowEventConstants {
     public static final int EVENT_OBJECT_CREATE = 0x8000;

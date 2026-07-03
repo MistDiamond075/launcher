@@ -3,6 +3,7 @@ package org.launcher.service;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.launcher.config.ConfigurationControl;
 import org.launcher.entity.AppEntity;
 import org.launcher.entity.InstanceEntity;
 import org.launcher.events.ForeignWindowEvent;
@@ -20,8 +21,11 @@ public class AppService {
     private final Map<AppEntity, Set<InstanceEntity>> started = new ConcurrentHashMap<>();
     private final ObservableList<InstanceEntity> instances = FXCollections.observableArrayList();
     private ForeignWindowEvent foreignWindowEvent;
+    private ConfigurationControl configurationControl;
 
-    public AppService() {}
+    public AppService(ConfigurationControl configurationControl) {
+        this.configurationControl = configurationControl;
+    }
 
     public void start(AppEntity entity) {
         ProcessBuilder processBuilder = createProcess(entity);
@@ -30,8 +34,11 @@ public class AppService {
             if(processBuilder == null) {
                 throw new NullPointerException("processBuilder is null");
             }
-            if(started.containsKey(entity) && !entity.isAllowMultipleInstances()) {
-                logger.warn("Application {} allows only one instance", entity.getId());
+            if(started.containsKey(entity) && (!entity.isAllowMultipleInstances() || !configurationControl.getConfiguration().getLauncher().isAllowMultipleInstances())) {
+                String log_message = !configurationControl.getConfiguration().getLauncher().isAllowMultipleInstances() ?
+                        "Current config doesn't allow multiple instances" :
+                        "Application {} allows only one instance";
+                logger.warn(log_message, entity.getId());
                 NotificationService.show("service.apps.app.instance_start.not_allowed","Only one instance allowed", BaseException.Type.WARNING);
                 return;
             }

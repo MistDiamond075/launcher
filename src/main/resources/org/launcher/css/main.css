@@ -42,7 +42,8 @@
     -fx-font-size: 40px;
 }
 .app-container-button:hover{
-    -fx-effect: dropshadow(gaussian, rgb(255, 101, 219), 10, 0, 0, 0);
+    -fx-background-color: #55babd;
+    -fx-effect: dropshadow(gaussian, rgb(255, 101, 219), 15, 0, 0, 0);
 }
 .app-container-button-active{
     -fx-background-color: #c853a6;
@@ -53,6 +54,7 @@
 }
 .app-container-button-disabled:hover{
     -fx-effect: none;
+    -fx-background-color: #6c6c6c;
 }
 .app-container-button-blocked{
     -fx-cursor: wait;
@@ -60,7 +62,7 @@
 }
 .app-container-button-active:hover{
     -fx-background-color: #cf3ba5;
-    -fx-effect: dropshadow(gaussian, rgb(230, 1, 220), 10, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgb(230, 1, 220), 15, 0, 0, 0);
 }
 .app-container-button-counter{
    /* -fx-text-fill: black;
@@ -79,4 +81,14 @@
 }
 .apps-container {
     -fx-hgap: 80px;
+    -fx-vgap: 50px;
+}
+.navigation-button{
+    -fx-background-color: #434343;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.navigation-button:hover{
+    -fx-effect: dropshadow(gaussian, rgb(0, 255, 149), 2, 1, 0, 0);
 }

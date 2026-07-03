@@ -8,12 +8,15 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import org.launcher.config.ConfigurationControl;
+import org.launcher.config.Localization;
 import org.launcher.entity.InstanceEntity;
 import org.launcher.exception.BaseException;
 import org.launcher.service.AppService;
@@ -23,16 +26,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainController {
     public enum SystemMessageLevel {ERROR, WARNING, INFO}
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
     private final ConfigurationControl configurationControl;
     private final AppService appService;
-    private final Map<String,Button> app_button = new HashMap<>();
+    private final Map<String,Button> app_button_all = new LinkedHashMap<>();
+    private Map<String,Button> app_button = new HashMap<>();
+    private int maxButtonsPerPage = 0;
+    private int currentPage = 0;
+    private int pages = 0;
     private final Map<InstanceEntity, ChangeListener<InstanceEntity.State>> stateListeners = new HashMap<>();
     private final Map<String, IntegerProperty> appCounters = new HashMap<>();
     @FXML
@@ -47,10 +53,14 @@ public class MainController {
     private HBox systemMessageContainer;
     @FXML
     private StackPane rootStackPane;
+    @FXML
+    private Button buttonLeft;
+    @FXML
+    private Button buttonRight;
 
     public MainController(ConfigurationControl configurationControl) {
         this.configurationControl = configurationControl;
-        appService = new AppService();
+        appService = new AppService(configurationControl);
     }
 
     @FXML
@@ -99,6 +109,7 @@ public class MainController {
                 );
 
             }
+
             if(app.InstancesCounterEnabled()) {
                 IntegerProperty counterValue = new SimpleIntegerProperty(0);
                 appCounters.put(app.getId(), counterValue);
@@ -122,13 +133,15 @@ public class MainController {
             if(!app.isEnabled()){
                 appButton.getStyleClass().add("app-container-button-disabled");
             }
-            app_button.put(app.getId(), appButton);
+            app_button_all.put(app.getId(), appButton);
             logger.debug("Loaded app {}", app.getId());
         }
         logger.info("Loaded {} apps", apps.size());
         NotificationService.show(MessageFormat.format("controller.main.apps.count",apps.size()),"Apps loaded", BaseException.Type.INFO);
         if(!apps.isEmpty()){
             appsContainer.getChildren().remove(appsContainerPlaceholder);
+        }else{
+            appsContainerPlaceholder.setText(Localization.get("controller.main.apps.empty","No apps specified ¯\\_(ツ)_/¯"));
         }
     }
 
@@ -138,6 +151,47 @@ public class MainController {
 
     public void initWindowTracking() {
         appService.initWindowEvent();
+    }
+
+    public void calculateAppListSize(){
+        Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+        double width = visualBounds.getWidth();
+        double height = visualBounds.getHeight();
+        Optional<Button> btn_opt = app_button_all.values().stream().findFirst();
+        if(btn_opt.isEmpty()){
+            return;
+        }
+        Button btn = btn_opt.get();
+        double buttonVerticalSize = btn.getHeight() + appsContainer.getVgap();
+        double buttonHorizontalSize = btn.getWidth() + appsContainer.getHgap();
+        int cols = (int)(width / buttonHorizontalSize);
+        int rows = ((int)(height / buttonVerticalSize)) - 1;
+        maxButtonsPerPage = cols * rows;
+        if(app_button_all.size() <= maxButtonsPerPage){
+            buttonLeft.setVisible(false);
+            buttonRight.setVisible(false);
+            return;
+        }
+        pages = app_button_all.size() / maxButtonsPerPage;
+        switchPageButtonListener(true,buttonRight);
+        switchPageButtonListener(false,buttonLeft);
+        setAppsOnPage();
+    }
+
+    private void switchPageButtonListener(boolean increase,Button button){
+        button.setOnAction(e -> {
+            if(increase){
+                currentPage++;
+            }else{
+                currentPage--;
+            }
+            if(currentPage > pages){
+                currentPage = 0;
+            }else if(currentPage < 0){
+                currentPage = pages;
+            }
+            setAppsOnPage();
+        });
     }
 
     private void subscribeToInstances(){
@@ -201,7 +255,7 @@ public class MainController {
     }
 
     private void updateButtonState(InstanceEntity instance) {
-        Button button = app_button.get( instance.getApp().getId());
+        Button button = app_button_all.get( instance.getApp().getId());
         if (button == null) {
             return;
         }
@@ -221,5 +275,20 @@ public class MainController {
                 button.getStyleClass().add("app-container-button-closed");
             }
         }
+    }
+
+    private void setAppsOnPage(){
+        app_button = app_button_all.entrySet()
+                .stream()
+                .skip((long) currentPage * maxButtonsPerPage)
+                .limit(maxButtonsPerPage)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
+        appsContainer.getChildren().clear();
+        appsContainer.getChildren().addAll(app_button.values());
     }
 }

@@ -1,4 +1,4 @@
-package org.launcher.utils;
+package org.launcher.utils.constants;
 
 import java.util.Map;
 

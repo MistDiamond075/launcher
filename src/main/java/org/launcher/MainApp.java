@@ -18,7 +18,6 @@ import org.launcher.utils.PathManager;
 import org.launcher.utils.jnr.lib.User32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sun.glass.ui.Window;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,17 +37,12 @@ public class MainApp extends Application {
 
     @Override
     public void init() throws Exception {
-        Parameters parameters = getParameters();
-        Map<String, String> named = parameters.getNamed();
-        String pathToConfig = named.getOrDefault("config", null);
-        if (pathToConfig == null) {
-            Path nearConfig = PathManager.getAppDir().resolve("config.json");
-            pathToConfig = Files.exists(nearConfig) ? nearConfig.toAbsolutePath().toString() : null;
-        }
-        configurationControl = new ConfigurationControl(pathToConfig);
         NotificationService.show("app.startup","Starting launcher...",2L, null);
+        loadConfiguration();
         mainWindowController = new MainWindowController();
-        keyboardController = new KeyboardController(configurationControl.getConfiguration().getAdmin().getCombination());
+        if(configurationControl.isLoaded()){
+            keyboardController = new KeyboardController(configurationControl.getConfiguration().getAdmin().getCombination());
+        }
         logger = LoggerFactory.getLogger(MainApp.class);
         Localization.load();
         logger.info("Launcher started");
@@ -57,11 +51,12 @@ public class MainApp extends Application {
 
     @Override
     public void stop() throws Exception {
-        NotificationService.stopExecutor();
         stopAllControllers();
-        keyboardController.stop();
-        keyloggerThread.interrupt();
+        if(keyloggerThread != null) {
+            keyloggerThread.interrupt();
+        }
         super.stop();
+        NotificationService.stopExecutor();
         logger.info("Launcher stopped");
     }
 
@@ -71,7 +66,6 @@ public class MainApp extends Application {
         stage.setTitle("Launcher");
         reloadScene(stage,null);
     }
-    //"C:\\Users\\egoru\\Downloads\\_lKhEEL0B88.jpg",
 
     public void reloadScene(Stage stage,String viewType){
         try {
@@ -83,7 +77,7 @@ public class MainApp extends Application {
             FXMLLoader fxmlLoader = configurationControl.isLoaded() ?
                     new FXMLLoader(MainApp.class.getResource("main-view.fxml")) :
                     new FXMLLoader(MainApp.class.getResource("wait-view.fxml"));
-            makeControllers(fxmlLoader,viewType);
+            makeUiControllers(fxmlLoader,viewType);
             Scene scene = new Scene(fxmlLoader.load());
             scene.getStylesheets().add(Objects.requireNonNull(MainApp.class.getResource("css/main.css")).toExternalForm());
             stage.setScene(scene);
@@ -95,13 +89,15 @@ public class MainApp extends Application {
                 mainWindowController.setHwnd(hwnd);
                 applyNoActivate(hwnd);
             });
-            keyloggerThread = new Thread(() -> keyboardController.start());
-            keyloggerThread.setDaemon(true);
-            keyloggerThread.setName("KeyloggerThread");
-            keyloggerThread.start();
             if(configurationControl.isLoaded()) {
+                keyloggerThread = new Thread(() -> keyboardController.start());
+                keyloggerThread.setDaemon(true);
+                keyloggerThread.setName("KeyloggerThread");
+                keyloggerThread.start();
                 mainController = fxmlLoader.getController();
                 mainController.initWindowTracking();
+                Runnable loadSceneListener = () -> mainController.calculateAppListSize();
+                Platform.runLater(loadSceneListener);
             }else{
                 waitController = new WaitController(configurationControl.getConfiguration());
             }
@@ -114,49 +110,27 @@ public class MainApp extends Application {
         launch(args);
     }
 
-    private long getHwnd() {
-        for (Window w : Window.getWindows()) {
-            logger.info(
-                    "hwnd={}, visible={}, x={}, y={}, w={}, h={}",
-                    w.getNativeWindow(),
-                    w.isVisible(),
-                    w.getX(),
-                    w.getY(),
-                    w.getWidth(),
-                    w.getHeight()
-            );
-            if (w.isVisible()) {
-                return w.getNativeWindow();
-            }
-        }
-        throw new IllegalStateException("JavaFX window not found");
-    }
-
     public void applyNoActivate(long hwnd) {
         int GWL_EXSTYLE = -20;
         int WS_EX_NOACTIVATE = 0x08000000;
 
         long exStyle = User32.INSTANCE.GetWindowLongPtrA(hwnd, GWL_EXSTYLE);
-
         exStyle |= WS_EX_NOACTIVATE;
-
         User32.INSTANCE.SetWindowLongPtrA(hwnd, GWL_EXSTYLE, exStyle);
-
-        // обязательно обновить window state
         User32.INSTANCE.SetWindowPos(
                 hwnd,
                 0,
                 0, 0, 0, 0,
-                0x0020 | 0x0001 | 0x0002 // FRAME_CHANGED | NO_MOVE | NO_SIZE
+                0x0020 | 0x0001 | 0x0002
         );
     }
 
-    private void makeControllers(FXMLLoader fxmlLoader,String type) {
+    private void makeUiControllers(FXMLLoader fxmlLoader, String type) {
         fxmlLoader.setControllerFactory(param ->
                 switch (type) {
                   case "main" ->  new MainController(configurationControl);
                   case "wait" -> new WaitController(configurationControl.getConfiguration());
-                  default -> throw new IllegalArgumentException("Unknown control type: " + type);
+                  default -> throw new IllegalArgumentException("Unknown controller type: " + type);
                 }
         );
     }
@@ -176,6 +150,9 @@ public class MainApp extends Application {
         }
         if(waitController != null) {
             waitController = null;
+        }
+        if(keyboardController != null) {
+            keyboardController.stop();
         }
     }
 
@@ -206,5 +183,16 @@ public class MainApp extends Application {
         }, null);
 
         return result.get();
+    }
+
+    private void loadConfiguration() {
+        Parameters parameters = getParameters();
+        Map<String, String> named = parameters.getNamed();
+        String pathToConfig = named.getOrDefault("config", null);
+        if (pathToConfig == null) {
+            Path nearConfig = PathManager.getAppDir().resolve("config.json");
+            pathToConfig = Files.exists(nearConfig) ? nearConfig.toAbsolutePath().toString() : null;
+        }
+        configurationControl = new ConfigurationControl(pathToConfig);
     }
 }

@@ -66,7 +66,7 @@ public interface User32 {
     Pointer CallNextHookEx(
             Pointer hhk,
             int nCode,
-            long wParam,
+            Pointer wParam,
             Pointer lParam
     );
 

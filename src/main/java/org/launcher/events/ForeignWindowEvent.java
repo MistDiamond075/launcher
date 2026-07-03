@@ -8,14 +8,14 @@ import org.launcher.async.CloseWindowAsync;
 import org.launcher.entity.InstanceEntity;
 import org.launcher.utils.jnr.lib.Kernel32;
 import org.launcher.utils.jnr.lib.User32;
-import org.launcher.utils.WindowEventConstants;
+import org.launcher.utils.constants.WindowEventConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.launcher.utils.WindowEventConstants.*;
+import static org.launcher.utils.constants.WindowEventConstants.*;
 
 public class ForeignWindowEvent implements AutoCloseable{
     private static final Logger logger = LoggerFactory.getLogger(ForeignWindowEvent.class);
@@ -123,8 +123,9 @@ public class ForeignWindowEvent implements AutoCloseable{
                 closeWindowScheduler.scheduleClose(instance);
             }else{
               //  Platform.runLater(() -> instance.setState(InstanceEntity.State.CLOSED));
-                if(instance.getState() != InstanceEntity.State.STARTING)
-                closeWindowScheduler.scheduleClose(instance);
+                if(instance.getState() != InstanceEntity.State.STARTING) {
+                    closeWindowScheduler.scheduleClose(instance);
+                }
             }
             logger.debug("Destroyed window: pid={}, hwnd={}, hwnds={}", pid, hwnd,instance.getHwnds());
         }

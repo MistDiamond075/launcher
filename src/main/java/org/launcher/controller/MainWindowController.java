@@ -5,7 +5,7 @@ import org.launcher.utils.jnr.callback.WindowSubclass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.launcher.utils.WindowEventConstants.*;
+import static org.launcher.utils.constants.WindowEventConstants.*;
 
 public class MainWindowController {
     private static final Logger logger = LoggerFactory.getLogger(MainWindowController.class);

@@ -29,4 +29,5 @@ module org.launcher {
     exports org.launcher.utils.jnr.callback;
     exports org.launcher.controller.ui;
     opens org.launcher.controller.ui to javafx.fxml, tools.jackson.databind;
+    opens org.launcher.utils.constants to ch.qos.logback.core;
 }
