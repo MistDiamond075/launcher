@@ -1,0 +1,82 @@
+{
+  "launcher": {
+    "title": "Demo header",
+    "orgName": "Jopa",
+    "fullscreen": true,
+    "showDate": true,
+    "showVersion": true,
+    "hideCursor": false,
+    "allowMultipleInstances": true,
+    "adminMenuEnabled": true
+  },
+  "apps": [
+    {
+      "id": "chrome",
+      "name": "google chrome",
+      "description": "demo browser test",
+      "icon": null,
+      "arguments": "--new-window\"",
+      "workingDirectory": "C:\\Program Files\\Google\\Chrome\\Application",
+      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "enabled": true,
+      "allowMultipleInstances": true,
+      "enableInstancesCounter": false,
+      "restartOnError": true,
+      "maxRuntime": null
+    },
+    {
+      "id": "notepad",
+      "name": "notepad",
+      "description": "demo npad test",
+      "icon": null,
+      "arguments": "",
+      "workingDirectory": "C:\\Windows\\System32",
+      "path": "C:\\Windows\\System32\\notepad.exe",
+      "enabled": true,
+      "allowMultipleInstances": false,
+      "enableInstancesCounter": false,
+      "restartOnError": true,
+      "maxRuntime": null
+    },
+    {
+      "id": "calc",
+      "name": "calc",
+      "description": "demo calc test",
+      "icon": null,
+      "arguments": "",
+      "workingDirectory": "C:\\Windows\\System32",
+      "path": "C:\\Windows\\System32\\calc.exe",
+      "enabled": true,
+      "allowMultipleInstances": true,
+      "enableInstancesCounter": false,
+      "restartOnError": true,
+      "maxRuntime": null
+    },
+    {
+      "id": "unregbat",
+      "name": "unreg",
+      "description": "unregistartion command",
+      "icon": null,
+      "arguments": "",
+      "workingDirectory": "?appd?",
+      "path": "?appd?\\resetkey.bat",
+      "enabled": true,
+      "allowMultipleInstances": false,
+      "enableInstancesCounter": false,
+      "restartOnError": true,
+      "maxRuntime": null
+    }
+  ],
+  "admin": {
+      "password": "0000",
+    "sessionTimeout": null,
+    "keyCombination": "Ctrl+Alt+M+S"
+  },
+  "logging": {
+      "level": "DEBUG",
+      "log": "console",
+      "path": "D:\\launcher\\dist\\launcher\\log01.txt",
+      "colorsEnabled": false,
+      "maxFileHistory": 30
+  }
+}
