@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import jnr.ffi.Memory;
 import jnr.ffi.Pointer;
 import org.launcher.async.CloseWindowAsync;
+import org.launcher.entity.AppEntity;
 import org.launcher.entity.InstanceEntity;
 import org.launcher.utils.jnr.lib.Kernel32;
 import org.launcher.utils.jnr.lib.User32;
@@ -93,6 +94,7 @@ public class ForeignWindowEvent implements AutoCloseable{
             return;
         }
 
+        AppEntity app = instance.getApp();
         if (event == EVENT_OBJECT_SHOW) {
             Pointer parent = user32.GetParent(hwndPtr);
             boolean visible = user32.IsWindowVisible(hwndPtr) != 0;
@@ -104,6 +106,7 @@ public class ForeignWindowEvent implements AutoCloseable{
                             instance.setState(InstanceEntity.State.RUNNING);
                         }
                     });
+                    app.getHwnds().add(hwnd);
                 }
             }
             //Platform.runLater(() -> instance.setState(InstanceEntity.State.RUNNING));
@@ -119,6 +122,7 @@ public class ForeignWindowEvent implements AutoCloseable{
         }
         else if(event == EVENT_OBJECT_DESTROY){
             instance.getHwnds().remove(hwnd);
+            app.getHwnds().remove(hwnd);
             if(!instance.getHwnds().isEmpty() && instance.getState() != InstanceEntity.State.STARTING) {
                 closeWindowScheduler.scheduleClose(instance);
             }else{

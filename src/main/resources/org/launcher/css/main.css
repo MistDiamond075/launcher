@@ -29,6 +29,9 @@
 .main-container {
     -fx-background-color: linear-gradient( rgb(130, 35, 179), rgb(35, 22, 117));
 }
+.main-container-none{
+    -fx-background-color: linear-gradient( rgb(151, 7, 225), rgb(12, 3, 71));
+}
 .app-container-button{
     -fx-background-color: #5c99af;
     -fx-pref-height: 200px;

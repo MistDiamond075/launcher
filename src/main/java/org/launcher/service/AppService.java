@@ -64,6 +64,7 @@ public class AppService {
 
     public void removeInstance(InstanceEntity instance) {
         Platform.runLater(() -> {
+            instance.getApp().getHwnds().removeAll(instance.getHwnds());
             instances.remove(instance);
             Set<InstanceEntity> instanceSet = started.get(instance.getApp());
             if(instanceSet != null) {

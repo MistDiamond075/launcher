@@ -11,6 +11,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -22,6 +23,7 @@ import org.launcher.exception.BaseException;
 import org.launcher.service.AppService;
 import org.launcher.entity.AppEntity;
 import org.launcher.service.NotificationService;
+import org.launcher.ui.GradientAnimator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,7 @@ public class MainController {
     private int pages = 0;
     private final Map<InstanceEntity, ChangeListener<InstanceEntity.State>> stateListeners = new HashMap<>();
     private final Map<String, IntegerProperty> appCounters = new HashMap<>();
+    private GradientAnimator gradientAnimator;
     @FXML
     private Label labelHeader;
     @FXML
@@ -53,6 +56,8 @@ public class MainController {
     private HBox systemMessageContainer;
     @FXML
     private StackPane rootStackPane;
+    @FXML
+    private BorderPane appsBorderPane;
     @FXML
     private Button buttonLeft;
     @FXML
@@ -76,7 +81,20 @@ public class MainController {
                 rootStackPane.widthProperty().multiply(0.8)
         );
         systemMessageContainer.setPrefWidth(100);
+        if(!configurationControl.getConfiguration().getLauncher().isBackgroundAnimationDisabled()) {
+            Rectangle2D bounds =
+                    Screen.getPrimary().getBounds();
 
+            GradientAnimator background =
+                    new GradientAnimator(
+                            (int) bounds.getWidth(),
+                            (int) bounds.getHeight(),
+                            GradientAnimator.rgb(151, 7, 225),
+                            GradientAnimator.rgb(12, 3, 71)
+                    );
+            rootStackPane.getChildren().addFirst(background);
+            appsBorderPane.getStyleClass().remove("main-container");
+        }
         logger.debug("MainController initialized");
     }
 
@@ -237,10 +255,10 @@ public class MainController {
     private void attachStateListener(InstanceEntity instance) {
         ChangeListener<InstanceEntity.State> listener = (obs, oldState, newState) ->
                 Platform.runLater(() -> {
-                    updateButtonState(instance);
                     if(newState == InstanceEntity.State.CLOSED && instance.getHwnds().isEmpty()){
                         appService.removeInstance(instance);
                     }
+                    updateButtonState(instance);
                 });
 
         instance.stateProperty().addListener(listener);
@@ -255,7 +273,8 @@ public class MainController {
     }
 
     private void updateButtonState(InstanceEntity instance) {
-        Button button = app_button_all.get( instance.getApp().getId());
+        Button button = app_button_all.get(instance.getApp().getId());
+        AppEntity app = instance.getApp();
         if (button == null) {
             return;
         }
@@ -267,8 +286,10 @@ public class MainController {
                 }
             }
             case CLOSED -> {
-                button.getStyleClass().remove("app-container-button-active");
-                button.getStyleClass().remove("app-container-button-blocked");
+                if(app.getHwnds().isEmpty()) {
+                    button.getStyleClass().remove("app-container-button-active");
+                    button.getStyleClass().remove("app-container-button-blocked");
+                }
             }
             case CLOSING -> {
                 button.getStyleClass().remove("app-container-button-active");

@@ -12,6 +12,7 @@ public class LauncherEntity implements BaseEntity{
     private final boolean showDate;
     private final boolean showVersion;
     private final boolean hideCursor;
+    private final boolean disableBackgroundAnimation;
     private final boolean allowMultipleInstances;
     private final boolean adminMenuEnabled;
 
@@ -22,6 +23,7 @@ public class LauncherEntity implements BaseEntity{
                           @JsonProperty("showDate") boolean showDate,
                           @JsonProperty("showVersion") boolean showVersion,
                           @JsonProperty("hideCursor") boolean hideCursor,
+                          @JsonProperty("disableBackgroundAnimation")boolean disableBackgroundAnimation,
                           @JsonProperty("allowMultipleInstances") boolean allowMultipleInstances,
                           @JsonProperty("adminMenuEnabled") boolean adminMenuEnabled) {
         this.title = title;
@@ -30,6 +32,7 @@ public class LauncherEntity implements BaseEntity{
         this.showDate = showDate;
         this.showVersion = showVersion;
         this.hideCursor = hideCursor;
+        this.disableBackgroundAnimation = disableBackgroundAnimation;
         this.allowMultipleInstances = allowMultipleInstances;
         this.adminMenuEnabled = adminMenuEnabled;
     }
@@ -56,6 +59,10 @@ public class LauncherEntity implements BaseEntity{
 
     public boolean isHideCursor() {
         return hideCursor;
+    }
+
+    public boolean isBackgroundAnimationDisabled() {
+        return disableBackgroundAnimation;
     }
 
     public boolean isAllowMultipleInstances() {

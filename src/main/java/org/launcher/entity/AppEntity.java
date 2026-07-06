@@ -12,7 +12,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class AppEntity implements BaseEntity{
     private static final Logger logger = LoggerFactory.getLogger(AppEntity.class);
@@ -28,6 +30,7 @@ public class AppEntity implements BaseEntity{
     private final boolean enableInstancesCounter;
     private final boolean restartOnError;
     private final Integer maxRuntime;
+    private Set<Long> hwnds = new HashSet<>();
 
     @JsonCreator
     public AppEntity(
@@ -103,6 +106,14 @@ public class AppEntity implements BaseEntity{
 
     public Integer getMaxRuntime() {
         return maxRuntime;
+    }
+
+    public Set<Long> getHwnds() {
+        return hwnds;
+    }
+
+    public void addHwnd(Long hwnd) {
+        hwnds.add(hwnd);
     }
 
     @Override
