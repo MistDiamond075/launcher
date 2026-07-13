@@ -21,8 +21,8 @@ public class AppService {
     private final Map<AppEntity, Set<InstanceEntity>> started = new ConcurrentHashMap<>();
     private final ObservableList<InstanceEntity> instances = FXCollections.observableArrayList();
     private ForeignWindowEvent foreignWindowEvent;
-    private ConfigurationControl configurationControl;
-
+    private final ConfigurationControl configurationControl;
+    //sample text sample text sample text
     public AppService(ConfigurationControl configurationControl) {
         this.configurationControl = configurationControl;
     }
@@ -39,7 +39,7 @@ public class AppService {
                         "Current config doesn't allow multiple instances" :
                         "Application {} allows only one instance";
                 logger.warn(log_message, entity.getId());
-                NotificationService.show("service.apps.app.instance_start.not_allowed","Only one instance allowed", BaseException.Type.WARNING);
+                NotificationService.show("service.apps.app.instance_start.not_allowed","Only one instance allowed",false, BaseException.Type.WARNING);
                 return;
             }
             process = processBuilder.start();
@@ -50,11 +50,11 @@ public class AppService {
                 foreignWindowEvent.register(proc);
             }
             logger.info("Started application {}, PID: {}",entity.getId(),process.pid());
-            NotificationService.show("service.apps.app.start.success","App started", BaseException.Type.INFO);
+            NotificationService.show("service.apps.app.start.success","App started",false, BaseException.Type.INFO);
         } catch (NullPointerException | IOException e) {
             logger.error("Failed to start process: {}",e.getMessage());
             logger.debug("Details: ", e);
-            NotificationService.show("service.apps.app.start.fail","Failed to start app",BaseException.Type.ERROR);
+            NotificationService.show("service.apps.app.start.fail","Failed to start app",false,BaseException.Type.ERROR);
         }
     }
 
@@ -85,6 +85,9 @@ public class AppService {
 
     public void shutdownWindowEvent() {
         foreignWindowEvent.close();
+        for(InstanceEntity instance : instances) {
+            instance.getProcess().destroy();
+        }
     }
 
     private ProcessBuilder createProcess(AppEntity entity) {

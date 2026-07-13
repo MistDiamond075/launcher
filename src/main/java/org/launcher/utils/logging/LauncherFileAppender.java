@@ -45,7 +45,7 @@ public class LauncherFileAppender {
         policy.setParent(appender);
         String name = Path.of(config.getLog().getPath()).getFileName().toString();
         String path = Files.isDirectory(Path.of(config.getLog().getPath())) ?
-                Path.of(config.getLog().getPath()).getParent().toString() + "/application-%d{dd-MM-yyyy}.log" :
+                Path.of(config.getLog().getPath()).getParent().toString() + "/launcher-%d{dd-MM-yyyy}.log" :
                 name.replaceFirst("[.][^.]+$","") + "-%d{dd-MM-yyyy}.log";
         policy.setFileNamePattern(path);
         policy.setMaxHistory(config.getLog().getMaxFileHistory());

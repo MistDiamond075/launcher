@@ -4,16 +4,21 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.launcher.async.AdminSessionControlAsync;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.config.Localization;
 import org.launcher.controller.KeyboardController;
+import org.launcher.controller.ui.AdminController;
 import org.launcher.controller.ui.MainController;
 import org.launcher.controller.MainWindowController;
 import org.launcher.controller.ui.WaitController;
+import org.launcher.exception.BaseException;
 import org.launcher.service.NotificationService;
+import org.launcher.utils.PasswordManager;
 import org.launcher.utils.PathManager;
 import org.launcher.utils.jnr.lib.User32;
 import org.slf4j.Logger;
@@ -29,19 +34,23 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MainApp extends Application {
     private static Logger logger;
     private ConfigurationControl configurationControl;
-    private MainController mainController;
-    private WaitController waitController;
+    private MainController mainController = null;
+    private WaitController waitController =null;
+    private AdminController adminController = null;
     private MainWindowController mainWindowController;
     private KeyboardController keyboardController;
-    private Thread keyloggerThread;
+    private Thread keyloggerThread = null;
+    private Stage mainStage;
+    private Scene mainScene;
 
     @Override
     public void init() throws Exception {
-        NotificationService.show("app.startup","Starting launcher...",2L, null);
+        NotificationService.show("app.startup", "Starting launcher...",false, 2L, null);
         loadConfiguration();
         mainWindowController = new MainWindowController();
-        if(configurationControl.isLoaded()){
-            keyboardController = new KeyboardController(configurationControl.getConfiguration().getAdmin().getCombination());
+        AdminSessionControlAsync.initialize(configurationControl,this);
+        if (configurationControl.isLoaded()) {
+            keyboardController = new KeyboardController(configurationControl.getConfiguration().getAdmin().getCombination(), this);
         }
         logger = LoggerFactory.getLogger(MainApp.class);
         Localization.load();
@@ -51,63 +60,96 @@ public class MainApp extends Application {
 
     @Override
     public void stop() throws Exception {
-        stopAllControllers();
-        if(keyloggerThread != null) {
-            keyloggerThread.interrupt();
+        try {
+            stopAllControllers();
+            if (keyboardController != null) {
+                keyboardController.stop();
+                keyboardController = null;
+            }
+            AdminSessionControlAsync.stop();
+            if (keyloggerThread != null) {
+                keyloggerThread.interrupt();
+            }
+        } finally {
+            NotificationService.stopExecutor();
+            logger.info("Launcher stopped");
+            super.stop();
         }
-        super.stop();
-        NotificationService.stopExecutor();
-        logger.info("Launcher stopped");
     }
 
     @Override
     public void start(Stage stage) throws IOException {
         stage.initStyle(StageStyle.UNDECORATED);
         stage.setTitle("Launcher");
-        reloadScene(stage,null);
+        preventExit(stage);
+        mainStage = stage;
+        reloadScene(stage, null);
     }
 
-    public void reloadScene(Stage stage,String viewType){
+    public void reloadScene(Stage stage, String viewType) {
         try {
             stopAllControllers();
-
-            if(viewType == null) {
+            if (viewType == null) {
                 viewType = configurationControl.isLoaded() ? "main" : "wait";
             }
-            FXMLLoader fxmlLoader = configurationControl.isLoaded() ?
-                    new FXMLLoader(MainApp.class.getResource("main-view.fxml")) :
-                    new FXMLLoader(MainApp.class.getResource("wait-view.fxml"));
-            makeUiControllers(fxmlLoader,viewType);
-            Scene scene = new Scene(fxmlLoader.load());
-            scene.getStylesheets().add(Objects.requireNonNull(MainApp.class.getResource("css/main.css")).toExternalForm());
-            stage.setScene(scene);
-            preventExit(stage);
-            stage.show();
-            Platform.runLater(() ->{
-                //Pointer hwnd_ptr = User32.INSTANCE.GetForegroundWindow();
-                long hwnd = findWindow(stage);//hwnd_ptr.address();//getHwnd();
-                mainWindowController.setHwnd(hwnd);
-                applyNoActivate(hwnd);
-            });
-            if(configurationControl.isLoaded()) {
-                keyloggerThread = new Thread(() -> keyboardController.start());
-                keyloggerThread.setDaemon(true);
-                keyloggerThread.setName("KeyloggerThread");
-                keyloggerThread.start();
-                mainController = fxmlLoader.getController();
-                mainController.initWindowTracking();
-                Runnable loadSceneListener = () -> mainController.calculateAppListSize();
-                Platform.runLater(loadSceneListener);
-            }else{
-                waitController = new WaitController(configurationControl.getConfiguration());
+            FXMLLoader fxmlLoader;
+            if (!configurationControl.isLoaded() && !viewType.equals("admin")) {
+                fxmlLoader = new FXMLLoader(MainApp.class.getResource("wait-view.fxml"));
+            } else {
+                fxmlLoader = viewType.equals("admin") ?
+                        new FXMLLoader(MainApp.class.getResource("admin-view.fxml")) :
+                        new FXMLLoader(MainApp.class.getResource("main-view.fxml"));
+            }
+            makeUiControllers(fxmlLoader, viewType);
+            Parent root = fxmlLoader.load();
+            root.setId(viewType);
+            if (mainScene == null) {
+                mainScene = new Scene(root);
+            } else {
+                mainStage.getScene().setRoot(root);
+            }
+            mainScene.getStylesheets().add(Objects.requireNonNull(MainApp.class.getResource("css/main.css")).toExternalForm());
+            if (stage.getScene() == null) {
+                stage.setScene(mainScene);
+                stage.show();
+            }
+            switch (viewType) {
+                case "main" -> {
+                    Platform.runLater(() -> {
+                        //Pointer hwnd_ptr = User32.INSTANCE.GetForegroundWindow();
+                        long hwnd = findWindow(stage);//hwnd_ptr.address();//getHwnd();
+                        mainWindowController.setHwnd(hwnd);
+                        applyNoActivate(hwnd);
+                    });
+                    if(keyloggerThread == null) {
+                        keyloggerThread = new Thread(() -> keyboardController.start());
+                        keyloggerThread.setDaemon(true);
+                        keyloggerThread.setName("KeyloggerThread");
+                        keyloggerThread.start();
+                    }
+                    mainController = fxmlLoader.getController();
+                    mainController.initWindowTracking();
+                    Runnable loadSceneListener = () -> mainController.calculateAppListSize();
+                    Platform.runLater(loadSceneListener);
+                }
+                case "wait" -> waitController = fxmlLoader.getController();
+                case "admin" -> adminController = fxmlLoader.getController();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    public void reloadScene(String viewType) {
+        reloadScene(mainStage, viewType);
+    }
+
+    public String getRootId() {
+        return mainScene.getRoot().getId();
+    }
+
     public static void main(String[] args) {
-        launch(args);
+       launch(args);
     }
 
     public void applyNoActivate(long hwnd) {
@@ -125,12 +167,25 @@ public class MainApp extends Application {
         );
     }
 
+    public MainController getMainController() {
+        return mainController;
+    }
+
+    public WaitController getWaitController() {
+        return waitController;
+    }
+
+    public AdminController getAdminController() {
+        return adminController;
+    }
+
     private void makeUiControllers(FXMLLoader fxmlLoader, String type) {
         fxmlLoader.setControllerFactory(param ->
                 switch (type) {
-                  case "main" ->  new MainController(configurationControl);
-                  case "wait" -> new WaitController(configurationControl.getConfiguration());
-                  default -> throw new IllegalArgumentException("Unknown controller type: " + type);
+                    case "main" -> new MainController(configurationControl);
+                    case "wait" -> new WaitController(configurationControl.getConfiguration());
+                    case "admin" -> new AdminController(configurationControl);
+                    default -> throw new IllegalArgumentException("Unknown controller type: " + type);
                 }
         );
     }
@@ -143,16 +198,16 @@ public class MainApp extends Application {
         stage.toBack();
     }
 
-    private void stopAllControllers(){
-        if(mainController != null) {
+    private void stopAllControllers() {
+        if (mainController != null) {
             mainController.stopAll();
             mainController = null;
         }
-        if(waitController != null) {
+        if (waitController != null) {
             waitController = null;
         }
-        if(keyboardController != null) {
-            keyboardController.stop();
+        if(adminController != null) {
+            adminController = null;
         }
     }
 
@@ -186,13 +241,21 @@ public class MainApp extends Application {
     }
 
     private void loadConfiguration() {
+        boolean fromParameter = true;
         Parameters parameters = getParameters();
         Map<String, String> named = parameters.getNamed();
         String pathToConfig = named.getOrDefault("config", null);
         if (pathToConfig == null) {
+            fromParameter = false;
             Path nearConfig = PathManager.getAppDir().resolve("config.json");
             pathToConfig = Files.exists(nearConfig) ? nearConfig.toAbsolutePath().toString() : null;
         }
         configurationControl = new ConfigurationControl(pathToConfig);
+        if (fromParameter) {
+            configurationControl.setLoadedFrom(ConfigurationControl.LoadedFrom.PARAMETER);
+        }
+        if (pathToConfig != null) {
+            configurationControl.setLoadedFrom(ConfigurationControl.LoadedFrom.APP_DIRECTORY);
+        }
     }
 }

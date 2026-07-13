@@ -6,7 +6,7 @@
 
   <groupId>org</groupId>
   <artifactId>launcher</artifactId>
-  <version>0.4</version>
+  <version>0.8</version>
   <name>launcher</name>
 
   <properties>
@@ -63,6 +63,17 @@
           <groupId>com.github.jnr</groupId>
           <artifactId>jnr-ffi</artifactId>
           <version>2.2.19</version>
+      </dependency>
+      <dependency>
+          <groupId>de.mkammerer</groupId>
+          <artifactId>argon2-jvm</artifactId>
+          <version>2.12</version>
+      </dependency>
+      <dependency>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna</artifactId>
+          <version>5.17.0</version>
+          <scope>compile</scope>
       </dependency>
   </dependencies>
 

@@ -1,5 +1,6 @@
 package org.launcher.controller;
 
+import org.launcher.async.AdminSessionControlAsync;
 import org.launcher.utils.jnr.lib.ComCtl32;
 import org.launcher.utils.jnr.callback.WindowSubclass;
 import org.slf4j.Logger;
@@ -52,7 +53,8 @@ public class MainWindowController {
         switch (msg) {
 
             case WM_MOUSEACTIVATE -> {
-                logger.warn("Mouse activated");
+                logger.debug("Mouse activated");
+                AdminSessionControlAsync.delayTermination();
                 return MA_NOACTIVATE;
             }
 

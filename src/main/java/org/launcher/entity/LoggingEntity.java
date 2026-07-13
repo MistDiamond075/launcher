@@ -21,6 +21,7 @@ public class LoggingEntity implements BaseEntity {
     private final String path;
     private final Level level;
     private final Log log;
+    private boolean historyEnabled = false;
 
     @JsonCreator
     public LoggingEntity(
@@ -31,6 +32,9 @@ public class LoggingEntity implements BaseEntity {
             @JsonProperty("maxFileHistory")int maxFileHistory) {
         this.colorsEnabled = colorsEnabled;
         this.path = path;
+        if(Files.isDirectory(Path.of(path))){
+            historyEnabled = true;
+        }
         Level lvl = null;
         try {
             lvl = Level.valueOf(level.toUpperCase());
@@ -75,6 +79,14 @@ public class LoggingEntity implements BaseEntity {
 
     public int getMaxFileHistory() {
         return maxFileHistory;
+    }
+
+    public boolean isHistoryEnabled() {
+        return historyEnabled;
+    }
+
+    public void setHistoryEnabled(boolean historyEnabled) {
+        this.historyEnabled = historyEnabled;
     }
 
     @Override

@@ -29,6 +29,7 @@ public class ConfigurationEntity implements BaseEntity {
         return launcher;
     }
 
+    @JsonProperty("logging")
     public LoggingEntity getLog() {
         return logging;
     }

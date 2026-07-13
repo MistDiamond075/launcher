@@ -6,9 +6,9 @@
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.launcher.controller.ui.MainController" fx:id="rootStackPane">
     <BorderPane style="-fx-font-size: 24px;" xmlns="http://javafx.com/javafx" styleClass="main-container" fx:id="appsBorderPane">
         <top>
-            <HBox alignment="CENTER" prefWidth="Infinity">
-                <Label text="_header_" styleClass="header" fx:id="labelHeader"/>
-            </HBox>
+            <StackPane prefWidth="Infinity" fx:id="headerContainer">
+
+            </StackPane>
         </top>
         <center>
             <FlowPane alignment="CENTER" prefWidth="Infinity" fx:id="appsContainer" styleClass="apps-container">
@@ -16,7 +16,7 @@
             </FlowPane>
         </center>
         <bottom>
-            <BorderPane>
+            <BorderPane  prefWidth="Infinity">
                 <BorderPane.margin>
                     <Insets right="40" bottom="30" left="40"/>
                 </BorderPane.margin>
@@ -41,4 +41,9 @@
         </StackPane.margin>
         <Label styleClass="system-message-text" wrapText="true" fx:id="systemMessage" > Sample text</Label>
     </HBox>
+    <Label styleClass="timer" fx:id="timer" StackPane.alignment="BOTTOM_RIGHT">
+        <StackPane.margin>
+            <Insets right="10"/>
+        </StackPane.margin>
+    </Label>
 </StackPane>

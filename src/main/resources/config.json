@@ -4,8 +4,8 @@
     "orgName": "Jopa",
     "fullscreen": true,
     "showDate": true,
-    "showVersion": true,
     "hideCursor": false,
+    "disableBackgroundAnimation": true,
     "allowMultipleInstances": true,
     "adminMenuEnabled": true
   },
@@ -47,7 +47,7 @@
       "workingDirectory": "C:\\Windows\\System32",
       "path": "C:\\Windows\\System32\\notepad.exe",
       "enabled": true,
-      "allowMultipleInstances": false,
+      "allowMultipleInstances": true,
       "enableInstancesCounter": false,
       "restartOnError": true,
       "maxRuntime": null
@@ -83,7 +83,7 @@
   ],
   "admin": {
       "password": "0000",
-    "sessionTimeout": null,
+    "sessionTimeout": 1,
     "keyCombination": "Alt+S"
   },
   "logging": {

@@ -1,0 +1,109 @@
+3[96m[29.06.2026 09:56:23] [0m[92m[INFO] [0m[94mconfig.ConfigurationControl[0m[97m - Configuration reloaded[0m
+[29.06.2026 10:07:07] [INFO] config.ConfigurationControl - Configuration reloaded
+[29.06.2026 10:07:08] [DEBUG] controller.MainController - Loaded app notepad
+[29.06.2026 10:07:08] [DEBUG] controller.MainController - Loaded app chrome
+[29.06.2026 10:07:08] [DEBUG] controller.MainController - Loaded app chrome2
+[29.06.2026 10:07:08] [INFO] controller.MainController - Loaded 3 apps
+[29.06.2026 10:07:08] [DEBUG] controller.MainController - MainController initialized
+[29.06.2026 10:07:11] [INFO] MainApp - Launcher stopped
+[29.06.2026 10:07:11] [DEBUG] async.CloseWindowAsync - Stopping CloseWindow scheduler
+[29.06.2026 10:07:11] [DEBUG] async.CloseWindowAsync - CloseWindow scheduler stopped
+[29.06.2026 10:08:00] [INFO] config.ConfigurationControl - Configuration reloaded
+[29.06.2026 10:08:00] [INFO] MainApp - Launcher started
+[29.06.2026 10:08:00] [DEBUG] MainApp - Launcher started
+[29.06.2026 10:08:00] [DEBUG] controller.MainController - Loaded app notepad
+[29.06.2026 10:08:00] [DEBUG] controller.MainController - Loaded app chrome
+[29.06.2026 10:08:00] [DEBUG] controller.MainController - Loaded app chrome2
+[29.06.2026 10:08:00] [INFO] controller.MainController - Loaded 3 apps
+[29.06.2026 10:08:00] [DEBUG] controller.MainController - MainController initialized
+[29.06.2026 10:08:03] [DEBUG] async.CloseWindowAsync - Stopping CloseWindow scheduler
+[29.06.2026 10:08:03] [INFO] MainApp - Launcher stopped
+[29.06.2026 10:08:03] [DEBUG] async.CloseWindowAsync - CloseWindow scheduler stopped
+[29.06.2026 10:13:53] [INFO] config.ConfigurationControl - Configuration reloaded
+[29.06.2026 10:13:53] [INFO] MainApp - Launcher started
+[29.06.2026 10:13:53] [DEBUG] MainApp - Launcher started
+[29.06.2026 10:13:53] [DEBUG] controller.MainController - Loaded app notepad
+[29.06.2026 10:13:53] [DEBUG] controller.MainController - Loaded app chrome
+[29.06.2026 10:13:53] [DEBUG] controller.MainController - Loaded app chrome2
+[29.06.2026 10:13:53] [INFO] controller.MainController - Loaded 3 apps
+[29.06.2026 10:13:53] [DEBUG] controller.MainController - MainController initialized
+[29.06.2026 10:13:58] [INFO] MainApp - Launcher stopped
+[29.06.2026 10:13:58] [DEBUG] async.CloseWindowAsync - Stopping CloseWindow scheduler
+[29.06.2026 10:13:58] [DEBUG] async.CloseWindowAsync - CloseWindow scheduler stopped
+[29.06.2026 10:14:31] [INFO] config.ConfigurationControl - Configuration reloaded
+[29.06.2026 10:14:31] [INFO] MainApp - Launcher started
+[29.06.2026 10:14:31] [DEBUG] MainApp - Launcher started
+[29.06.2026 10:14:31] [DEBUG] controller.MainController - Loaded app notepad
+[29.06.2026 10:14:31] [DEBUG] controller.MainController - Loaded app chrome
+[29.06.2026 10:14:31] [DEBUG] controller.MainController - Loaded app chrome2
+[29.06.2026 10:14:31] [INFO] controller.MainController - Loaded 3 apps
+[29.06.2026 10:14:31] [DEBUG] controller.MainController - MainController initialized
+[29.06.2026 10:14:34] [DEBUG] async.CloseWindowAsync - Stopping CloseWindow scheduler
+[29.06.2026 10:14:34] [DEBUG] async.CloseWindowAsync - CloseWindow scheduler stopped
+[29.06.2026 10:14:34] [INFO] MainApp - Launcher stopped
+[96m[29.06.2026 10:15:19] [0m[92m[INFO] [0m[94mconfig.ConfigurationControl[0m[97m - Configuration reloaded[0m
+[96m[29.06.2026 10:15:19] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:15:19] [0m[95m[DEBUG] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:15:19] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app notepad[0m
+[96m[29.06.2026 10:15:19] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome[0m
+[96m[29.06.2026 10:15:19] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome2[0m
+[96m[29.06.2026 10:15:19] [0m[92m[INFO] [0m[94mcontroller.MainController[0m[97m - Loaded 3 apps[0m
+[96m[29.06.2026 10:15:19] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - MainController initialized[0m
+[96m[29.06.2026 10:15:21] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher stopped[0m
+[96m[29.06.2026 10:15:21] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - Stopping CloseWindow scheduler[0m
+[96m[29.06.2026 10:15:21] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - CloseWindow scheduler stopped[0m
+[96m[29.06.2026 10:15:37] [0m[92m[INFO] [0m[94mconfig.ConfigurationControl[0m[97m - Configuration reloaded[0m
+[96m[29.06.2026 10:15:37] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:15:37] [0m[95m[DEBUG] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:15:38] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app notepad[0m
+[96m[29.06.2026 10:15:38] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome[0m
+[96m[29.06.2026 10:15:38] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome2[0m
+[96m[29.06.2026 10:15:38] [0m[92m[INFO] [0m[94mcontroller.MainController[0m[97m - Loaded 3 apps[0m
+[96m[29.06.2026 10:15:38] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - MainController initialized[0m
+[96m[29.06.2026 10:15:40] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher stopped[0m
+[96m[29.06.2026 10:15:40] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - Stopping CloseWindow scheduler[0m
+[96m[29.06.2026 10:15:40] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - CloseWindow scheduler stopped[0m
+[96m[29.06.2026 10:16:36] [0m[92m[INFO] [0m[94mconfig.ConfigurationControl[0m[97m - Configuration reloaded[0m
+[96m[29.06.2026 10:16:36] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:16:36] [0m[95m[DEBUG] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:16:36] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app notepad[0m
+[96m[29.06.2026 10:16:36] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome[0m
+[96m[29.06.2026 10:16:36] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome2[0m
+[96m[29.06.2026 10:16:36] [0m[92m[INFO] [0m[94mcontroller.MainController[0m[97m - Loaded 3 apps[0m
+[96m[29.06.2026 10:16:36] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - MainController initialized[0m
+[96m[29.06.2026 10:16:38] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher stopped[0m
+[96m[29.06.2026 10:16:38] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - Stopping CloseWindow scheduler[0m
+[96m[29.06.2026 10:16:38] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - CloseWindow scheduler stopped[0m
+[96m[29.06.2026 10:18:39] [0m[92m[INFO] [0m[94mconfig.ConfigurationControl[0m[97m - Configuration reloaded[0m
+[96m[29.06.2026 10:18:39] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:18:39] [0m[95m[DEBUG] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:18:39] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app notepad[0m
+[96m[29.06.2026 10:18:39] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome[0m
+[96m[29.06.2026 10:18:39] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome2[0m
+[96m[29.06.2026 10:18:39] [0m[92m[INFO] [0m[94mcontroller.MainController[0m[97m - Loaded 3 apps[0m
+[96m[29.06.2026 10:18:39] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - MainController initialized[0m
+[96m[29.06.2026 10:18:42] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher stopped[0m
+[96m[29.06.2026 10:18:42] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - Stopping CloseWindow scheduler[0m
+[96m[29.06.2026 10:18:42] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - CloseWindow scheduler stopped[0m
+[29.06.2026 10:19:18] [INFO] config.ConfigurationControl - Configuration reloaded
+[29.06.2026 10:19:18] [INFO] MainApp - Launcher started
+[29.06.2026 10:19:18] [DEBUG] MainApp - Launcher started
+[29.06.2026 10:19:18] [DEBUG] controller.MainController - Loaded app notepad
+[29.06.2026 10:19:18] [DEBUG] controller.MainController - Loaded app chrome
+[29.06.2026 10:19:18] [DEBUG] controller.MainController - Loaded app chrome2
+[29.06.2026 10:19:18] [INFO] controller.MainController - Loaded 3 apps
+[29.06.2026 10:19:18] [DEBUG] controller.MainController - MainController initialized
+[29.06.2026 10:19:20] [DEBUG] async.CloseWindowAsync - Stopping CloseWindow scheduler
+[29.06.2026 10:19:20] [DEBUG] async.CloseWindowAsync - CloseWindow scheduler stopped
+[29.06.2026 10:19:20] [INFO] MainApp - Launcher stopped
+[96m[29.06.2026 10:28:06] [0m[92m[INFO] [0m[94mconfig.ConfigurationControl[0m[97m - Configuration reloaded[0m
+[96m[29.06.2026 10:28:06] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:28:06] [0m[95m[DEBUG] [0m[94mMainApp[0m[97m - Launcher started[0m
+[96m[29.06.2026 10:28:06] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app notepad[0m
+[96m[29.06.2026 10:28:06] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome[0m
+[96m[29.06.2026 10:28:06] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - Loaded app chrome2[0m
+[96m[29.06.2026 10:28:06] [0m[92m[INFO] [0m[94mcontroller.MainController[0m[97m - Loaded 3 apps[0m
+[96m[29.06.2026 10:28:06] [0m[95m[DEBUG] [0m[94mcontroller.MainController[0m[97m - MainController initialized[0m
+[96m[29.06.2026 10:28:12] [0m[92m[INFO] [0m[94mMainApp[0m[97m - Launcher stopped[0m
+[96m[29.06.2026 10:28:12] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - Stopping CloseWindow scheduler[0m
+[96m[29.06.2026 10:28:12] [0m[95m[DEBUG] [0m[94masync.CloseWindowAsync[0m[97m - CloseWindow scheduler stopped[0m

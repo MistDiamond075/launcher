@@ -1,6 +1,7 @@
 package org.launcher.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.launcher.exception.EntityValidationException;
 import org.launcher.utils.constants.KeyboardEventConstants;
@@ -10,8 +11,10 @@ import java.util.Objects;
 import java.util.Set;
 
 public class AdminEntity implements BaseEntity {
-    private final String password;
+    private String password;
     private final Integer sessionTimeout;
+    private String strCombination;
+    @JsonIgnore
     private final Set<Integer> combination;
 
     @JsonCreator
@@ -22,6 +25,7 @@ public class AdminEntity implements BaseEntity {
         this.password = password;
         this.sessionTimeout = sessionTimeout;
         this.combination = parseHotkey(keyCombination);
+        this.strCombination = keyCombination;
     }
 
     public String getPassword() {
@@ -34,6 +38,19 @@ public class AdminEntity implements BaseEntity {
 
     public Set<Integer> getCombination() {
         return combination;
+    }
+
+    @JsonProperty("keyCombination")
+    public String getStrCombination() {
+        return strCombination;
+    }
+
+    public void setStrCombination(String strCombination) {
+        this.strCombination = strCombination;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override

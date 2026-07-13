@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.launcher.controller.ui.AdminController" fx:id="rootStackPane">
+    <BorderPane style="-fx-font-size: 24px;" xmlns="http://javafx.com/javafx" styleClass="main-container" fx:id="buttonsBorderPane">
+        <top>
+            <HBox alignment="CENTER" prefWidth="Infinity">
+                <Label text="_header_" styleClass="header" fx:id="configStatus"/>
+            </HBox>
+        </top>
+        <center>
+            <FlowPane alignment="CENTER" prefWidth="Infinity" fx:id="buttonsContainer" styleClass="apps-container">
+            </FlowPane>
+        </center>
+    </BorderPane>
+    <HBox
+            styleClass="system-message-container"
+            alignment="CENTER" maxHeight="-Infinity"
+            minHeight="40"
+            fx:id="systemMessageContainer"
+            StackPane.alignment="TOP_CENTER"
+    >
+        <StackPane.margin>
+            <Insets top="100"/>
+        </StackPane.margin>
+        <Label styleClass="system-message-text" wrapText="true" fx:id="systemMessage" > Sample text</Label>
+    </HBox>
+    <HBox
+        fx:id="passwordScreen"
+        alignment="CENTER"
+        styleClass="main-container"
+        prefHeight="Infinity"
+        prefWidth="Infinity"
+    >
+        <TextField fx:id="passwordInput" promptText="Пароль" styleClass="password-input" prefWidth="420" prefHeight="40"/>
+        <TextField fx:id="newPasswordInput" promptText="Новый пароль" styleClass="password-input" prefHeight="40" prefWidth="420"/>
+    </HBox>
+</StackPane>
+

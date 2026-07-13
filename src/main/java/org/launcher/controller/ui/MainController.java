@@ -15,7 +15,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Screen;
+import org.launcher.async.UiTimer;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.config.Localization;
 import org.launcher.entity.InstanceEntity;
@@ -28,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,7 +42,6 @@ public class MainController {
     private final ConfigurationControl configurationControl;
     private final AppService appService;
     private final Map<String,Button> app_button_all = new LinkedHashMap<>();
-    private Map<String,Button> app_button = new HashMap<>();
     private int maxButtonsPerPage = 0;
     private int currentPage = 0;
     private int pages = 0;
@@ -45,7 +49,7 @@ public class MainController {
     private final Map<String, IntegerProperty> appCounters = new HashMap<>();
     private GradientAnimator gradientAnimator;
     @FXML
-    private Label labelHeader;
+    private StackPane headerContainer;
     @FXML
     private Label appsContainerPlaceholder;
     @FXML
@@ -54,6 +58,8 @@ public class MainController {
     private Label systemMessage;
     @FXML
     private HBox systemMessageContainer;
+    @FXML
+    private Label timer;
     @FXML
     private StackPane rootStackPane;
     @FXML
@@ -81,7 +87,7 @@ public class MainController {
                 rootStackPane.widthProperty().multiply(0.8)
         );
         systemMessageContainer.setPrefWidth(100);
-        if(!configurationControl.getConfiguration().getLauncher().isBackgroundAnimationDisabled()) {
+        if(!configurationControl.getConfiguration().getLauncher().isDisableBackgroundAnimation()) {
             Rectangle2D bounds =
                     Screen.getPrimary().getBounds();
 
@@ -95,22 +101,42 @@ public class MainController {
             rootStackPane.getChildren().addFirst(background);
             appsBorderPane.getStyleClass().remove("main-container");
         }
+        //timer = new Label();
+        timer.getStyleClass().add("timer");
+        UiTimer.start(timer);
+
         logger.debug("MainController initialized");
     }
 
     public void stopAll(){
         appService.shutdownWindowEvent();
+        UiTimer.stop();
     }
 
     private void setHeader(){
-        labelHeader.setText(configurationControl.getConfiguration().getLauncher().getTitle());
+        if(configurationControl.getConfiguration().getLauncher().isTitlePicture()){
+
+        }else {
+            Label labelHeader = new Label();
+            labelHeader.getStyleClass().add("header");
+            labelHeader.setText(configurationControl.getConfiguration().getLauncher().getTitle());
+            StackPane.setAlignment(labelHeader,Pos.TOP_CENTER);
+            headerContainer.getChildren().add(labelHeader);
+        }
+       // StackPane.setAlignment(timer,Pos.TOP_RIGHT);
+       // StackPane.setMargin(timer,new Insets(0,10,0,0));
+       // headerContainer.getChildren().add(timer);
     }
 
     private void setAppList(){
         Set<AppEntity> apps = configurationControl.getConfiguration().getApps();
         for(AppEntity app : apps){
 
-            Button appButton = new Button(app.getName());
+            Button appButton = new Button();
+            Text t = new Text(app.getName());
+            t.getStyleClass().add("app-container-button-text");
+            appButton.setGraphic(t);
+            appButton.setAlignment(Pos.BOTTOM_CENTER);
             appButton.getStyleClass().add("app-container-button");
             appButton.setOnAction(e -> {
                 if(!appButton.getStyleClass().contains("app-container-button-blocked") && !appButton.getStyleClass().contains("app-container-button-disabled")) {
@@ -122,13 +148,12 @@ public class MainController {
                 appButton.setStyle(
                         "-fx-background-image: url('"+ app.getIcon().toUri()+"');" +
                         "-fx-background-repeat: no-repeat; " +
-                        "-fx-background-position: center;" +
-                        "-fx-text-fill: transparent;"
+                        "-fx-background-position: center;"
                 );
 
             }
 
-            if(app.InstancesCounterEnabled()) {
+            if(app.isEnableInstancesCounter()) {
                 IntegerProperty counterValue = new SimpleIntegerProperty(0);
                 appCounters.put(app.getId(), counterValue);
 
@@ -150,12 +175,21 @@ public class MainController {
             }
             if(!app.isEnabled()){
                 appButton.getStyleClass().add("app-container-button-disabled");
+                appButton.setMouseTransparent(true);
             }
             app_button_all.put(app.getId(), appButton);
             logger.debug("Loaded app {}", app.getId());
         }
         logger.info("Loaded {} apps", apps.size());
-        NotificationService.show(MessageFormat.format("controller.main.apps.count",apps.size()),"Apps loaded", BaseException.Type.INFO);
+        NotificationService.show(
+                MessageFormat.format(
+                        Localization.get("controller.main.apps.count"),
+                        apps.size()
+                ),
+                "Apps loaded",
+                true,
+                BaseException.Type.INFO
+        );
         if(!apps.isEmpty()){
             appsContainer.getChildren().remove(appsContainerPlaceholder);
         }else{
@@ -299,7 +333,7 @@ public class MainController {
     }
 
     private void setAppsOnPage(){
-        app_button = app_button_all.entrySet()
+        Map<String, Button> app_button = app_button_all.entrySet()
                 .stream()
                 .skip((long) currentPage * maxButtonsPerPage)
                 .limit(maxButtonsPerPage)

@@ -55,20 +55,46 @@ public interface User32 {
             int X, int Y, int cx, int cy,
             int uFlags
     );
-
     Pointer SetWindowsHookExW(
             int idHook,
             LowLevelKeyboardProc lpfn,
             Pointer hMod,
             int dwThreadId
     );
-
     Pointer CallNextHookEx(
             Pointer hhk,
             int nCode,
             Pointer wParam,
             Pointer lParam
     );
-
     boolean UnhookWindowsHookEx(Pointer hhk);
+    int GetKeyboardState(byte[] lpKeyState);
+    long GetKeyboardLayout(int idThread);
+    int ToUnicodeEx(
+            int wVirtKey,
+            int wScanCode,
+            byte[] lpKeyState,
+            char[] pwszBuff,
+            int cchBuff,
+            int wFlags,
+            long dwhkl
+    );
+    boolean DestroyIcon(Pointer hIcon);
+    boolean DrawIconEx(
+            Pointer hdc,
+            int x,
+            int y,
+            Pointer hIcon,
+            int cx,
+            int cy,
+            int step,
+            Pointer hBrush,
+            int flags
+    );
+    Pointer GetDC(Pointer hwnd);
+    int ReleaseDC(Pointer hwnd, Pointer hdc);
+    boolean GetIconInfo(
+            Pointer hIcon,
+            ICONINFO iconInfo
+    );
 }

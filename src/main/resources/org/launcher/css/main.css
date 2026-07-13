@@ -9,6 +9,11 @@
     -fx-font-weight: bold;
     -fx-font-size: 30px;
 }
+.timer{
+    -fx-text-fill: rgb(0, 255, 234);
+    -fx-font-style: italic;
+    -fx-font-size: 24px;
+}
 .system-message-container{
     -fx-background-color: rgba(0, 0, 0, 0.78);
     -fx-background-radius: 17px;
@@ -32,12 +37,49 @@
 .main-container-none{
     -fx-background-color: linear-gradient( rgb(151, 7, 225), rgb(12, 3, 71));
 }
-.app-container-button{
-    -fx-background-color: #5c99af;
+.app-container-button-old{
+    -fx-background-color: rgba(255, 255, 255, 0.41);
+    -fx-border-color: rgb(0, 0, 0);
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
     -fx-pref-height: 200px;
     -fx-pref-width: 200px;
     -fx-text-fill: #000000;
     -fx-cursor: hand;
+}
+.app-container-button-text{
+    -fx-background-color: rgba(255, 255, 255);
+    -fx-text-fill: #e8e8e8;
+    -fx-fill: #e8e8e8;
+    -fx-effect: dropshadow(two-pass-box,
+    rgba(0,0,0),
+    2, 0.2, 0, 0);
+}
+.app-container-button-label{
+    -fx-text-fill: #171717;
+}
+.app-container-button{
+    -fx-pref-height: 200px;
+    -fx-pref-width: 200px;
+    -fx-cursor: hand;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-text-fill: #e8e8e8;
+    -fx-background-insets: 0;
+    -fx-font-size: 20px;
+
+    -fx-background-color:
+            rgba(255,255,255,0.3),
+            linear-gradient(from 0% 0% to 0% 100%,
+            rgba(255,255,255,0.4),
+            rgba(255, 255, 255, 0.14));
+
+    -fx-border-color: rgba(255,255,255,0.35);
+    -fx-border-width: 1;
+
+    -fx-effect: dropshadow(gaussian,
+    rgba(0,0,0,0.18),
+    16, 0.25, 0, 4);
 }
 .apps-container-placeholder{
     -fx-text-fill: white;
@@ -45,15 +87,34 @@
     -fx-font-size: 40px;
 }
 .app-container-button:hover{
-    -fx-background-color: #55babd;
-    -fx-effect: dropshadow(gaussian, rgb(255, 101, 219), 15, 0, 0, 0);
+    -fx-background-color:
+            rgba(255,255,255,0.42),
+            linear-gradient(from 0% 0% to 0% 100%,
+            rgba(255,255,255,0.58),
+            rgba(255,255,255,0.20));
+
+    -fx-border-color: rgba(255,255,255,0.65);
+    -fx-border-width: 1.2;
+
+    -fx-effect:
+            dropshadow(gaussian, rgba(255,255,255,0.35), 12, 0.4, 0, 0),
+            dropshadow(gaussian, rgba(90,170,255,0.25), 20, 0.3, 0, 0),
+            dropshadow(gaussian, rgba(0,0,0,0.22), 18, 0.25, 0, 5);
+    -fx-scale-x: 1.01;
+    -fx-scale-y: 1.01;
 }
 .app-container-button-active{
     -fx-background-color: #c853a6;
 }
 .app-container-button-disabled{
     -fx-cursor: default;
-    -fx-background-color: #6c6c6c;
+    -fx-background-color:
+            rgba(37, 37, 37, 0.36),
+            linear-gradient(to bottom,
+            rgba(104, 104, 104, 0.18),
+            rgba(53, 53, 53, 0.02));
+
+    -fx-border-color: rgba(255,255,255,0.22);
 }
 .app-container-button-disabled:hover{
     -fx-effect: none;
@@ -94,4 +155,7 @@
 }
 .navigation-button:hover{
     -fx-effect: dropshadow(gaussian, rgb(0, 255, 149), 2, 1, 0, 0);
+}
+.password-input{
+    -fx-font-size: 16px;
 }

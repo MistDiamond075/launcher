@@ -1,27 +1,34 @@
 package org.launcher.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 public class LauncherEntity implements BaseEntity{
+    private static final Logger logger = LoggerFactory.getLogger(LauncherEntity.class);
     private final String title;
     private final String orgName;
     private final boolean fullscreen;
     private final boolean showDate;
-    private final boolean showVersion;
     private final boolean hideCursor;
     private final boolean disableBackgroundAnimation;
     private final boolean allowMultipleInstances;
     private final boolean adminMenuEnabled;
+    @JsonIgnore
+    private final boolean isTitlePicture;
 
     @JsonCreator
     public LauncherEntity(@JsonProperty("title") String title,
                           @JsonProperty("orgName")  String orgName,
                           @JsonProperty("fullscreen") boolean fullscreen,
                           @JsonProperty("showDate") boolean showDate,
-                          @JsonProperty("showVersion") boolean showVersion,
                           @JsonProperty("hideCursor") boolean hideCursor,
                           @JsonProperty("disableBackgroundAnimation")boolean disableBackgroundAnimation,
                           @JsonProperty("allowMultipleInstances") boolean allowMultipleInstances,
@@ -30,11 +37,20 @@ public class LauncherEntity implements BaseEntity{
         this.orgName = orgName;
         this.fullscreen = fullscreen;
         this.showDate = showDate;
-        this.showVersion = showVersion;
         this.hideCursor = hideCursor;
         this.disableBackgroundAnimation = disableBackgroundAnimation;
         this.allowMultipleInstances = allowMultipleInstances;
         this.adminMenuEnabled = adminMenuEnabled;
+        boolean isPic = false;
+        try{
+            Path pathToTitle = Paths.get(title);
+            isPic = Files.exists(pathToTitle);
+        } catch (Exception e) {
+            logger.debug(e.getMessage());
+            isPic = false;
+        }finally{
+            isTitlePicture = isPic;
+        }
     }
 
     public String getTitle() {
@@ -53,15 +69,15 @@ public class LauncherEntity implements BaseEntity{
         return showDate;
     }
 
-    public boolean isShowVersion() {
-        return showVersion;
-    }
-
     public boolean isHideCursor() {
         return hideCursor;
     }
 
-    public boolean isBackgroundAnimationDisabled() {
+    public boolean isTitlePicture() {
+        return isTitlePicture;
+    }
+
+    public boolean isDisableBackgroundAnimation() {
         return disableBackgroundAnimation;
     }
 
@@ -92,7 +108,6 @@ public class LauncherEntity implements BaseEntity{
                 ", orgName='" + orgName + '\'' +
                 ", fullscreen=" + fullscreen +
                 ", showDate=" + showDate +
-                ", showVersion=" + showVersion +
                 ", hideCursor=" + hideCursor +
                 ", allowMultipleInstances=" + allowMultipleInstances +
                 ", adminMenuEnabled=" + adminMenuEnabled +

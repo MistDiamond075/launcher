@@ -8,6 +8,7 @@ import org.launcher.exception.BaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,10 +26,10 @@ public class NotificationService {
         c.setVisible(false);
     }
 
-    public static void show(String message,String defaultMessage, Long delay, BaseException.Type type) {
+    public static void show(String message,String defaultMessage, boolean showAsIs, Long delay, BaseException.Type type) {
         if(container!=null && label!=null) {
             Platform.runLater(() -> {
-                String msg = Localization.get(message, defaultMessage);
+                String msg = showAsIs ? message : Localization.get(message, defaultMessage);
                // label.setText(msg);
                 container.setVisible(true);
                 label.getStyleClass().removeAll(
@@ -53,7 +54,9 @@ public class NotificationService {
                     default -> label.getStyleClass().add("system-message-neutral");
                 }
                 if(delay!=null) {
-                    systemMessageExecutor.schedule(() -> container.setVisible(false), delay, TimeUnit.SECONDS);
+                    systemMessageExecutor.schedule(() -> Platform.runLater(() -> container.setVisible(false)),
+                            delay,
+                            TimeUnit.SECONDS);
                 }else {
                     container.setVisible(false);
                 }
@@ -61,12 +64,12 @@ public class NotificationService {
         }
     }
 
-    public static void show(String message,String defaultMessage, BaseException.Type type) {
-        show(message,defaultMessage, default_delay, type);
+    public static void show(String message,String defaultMessage, boolean showAsIs, BaseException.Type type) {
+        show(message,defaultMessage, showAsIs, default_delay, type);
     }
 
     public static void show(BaseException ex) {
-        show(ex.getUserMessage(),"Undefined error", BaseException.Type.ERROR);
+        show(ex.getUserMessage(),"Undefined error",false, BaseException.Type.ERROR);
     }
 
     public static void stopExecutor() {

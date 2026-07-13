@@ -1,6 +1,7 @@
 package org.launcher.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.launcher.exception.EntityValidationException;
 import org.launcher.utils.PathManager;
@@ -8,7 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +35,7 @@ public class AppEntity implements BaseEntity{
     private final boolean enableInstancesCounter;
     private final boolean restartOnError;
     private final Integer maxRuntime;
+    @JsonIgnore
     private Set<Long> hwnds = new HashSet<>();
 
     @JsonCreator
@@ -96,7 +102,7 @@ public class AppEntity implements BaseEntity{
         return allowMultipleInstances;
     }
 
-    public boolean InstancesCounterEnabled() {
+    public boolean isEnableInstancesCounter() {
         return enableInstancesCounter;
     }
 
@@ -114,6 +120,21 @@ public class AppEntity implements BaseEntity{
 
     public void addHwnd(Long hwnd) {
         hwnds.add(hwnd);
+    }
+
+    @JsonProperty("path")
+    public String getPathString() {
+        return path == null ? null : path.toString();
+    }
+
+    @JsonProperty("icon")
+    public String getIconPathString() {
+        return icon == null ? null : icon.toString();
+    }
+
+    @JsonProperty("workingDirectory")
+    public String getWorkingDirectoryPathString() {
+        return workingDirectory == null ? null : workingDirectory.toString();
     }
 
     @Override
@@ -140,11 +161,41 @@ public class AppEntity implements BaseEntity{
             try {
                 boolean isImage = ImageIO.read(icon.toFile()) != null;
                 if(!isImage){
-                    throw new EntityValidationException("Invalid icon " + icon);
+                    this.icon = null;
                 }
             } catch (IOException e) {
                 logger.error("Error reading icon {}", icon, e);
-                throw new EntityValidationException("Invalid icon " + icon);
+                this.icon = null;
+            }
+        }
+        if(this.icon == null){
+            if(this.path == null){
+                return;
+            }
+            File file = path.toFile();
+            Icon ico = FileSystemView.getFileSystemView().getSystemIcon(file);
+            if(ico == null){
+                file = new File(System.getenv("ComSpec"));
+                ico = FileSystemView.getFileSystemView().getSystemIcon(file);
+            }
+            BufferedImage bufferedImage = new BufferedImage(
+                    ico.getIconWidth(),
+                    ico.getIconHeight(),
+                    BufferedImage.TYPE_INT_ARGB
+            );
+            Graphics2D g = bufferedImage.createGraphics();
+            try {
+                ico.paintIcon(null, g, 0, 0);
+            } finally {
+                g.dispose();
+            }
+            try {
+                Path temp = Files.createTempFile("icon_", ".png");
+                ImageIO.write(bufferedImage, "png", temp.toFile());
+                this.icon = temp;
+            } catch (IOException e) {
+                this.icon = null;
+                throw new EntityValidationException("icon is incorrect","Не удалось задать иконку",e,false);
             }
         }
     }
