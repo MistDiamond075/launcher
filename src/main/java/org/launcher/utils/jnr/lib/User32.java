@@ -3,6 +3,7 @@ import jnr.ffi.LibraryLoader;
 import jnr.ffi.Pointer;
 import jnr.ffi.annotations.Delegate;
 import org.launcher.utils.jnr.callback.LowLevelKeyboardProc;
+import org.launcher.utils.jnr.struct.ICONINFO;
 
 public interface User32 {
     User32 INSTANCE = LibraryLoader.create(User32.class).stdcall().load("user32");
