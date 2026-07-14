@@ -148,7 +148,8 @@ public class MainController {
                 appButton.setStyle(
                         "-fx-background-image: url('"+ app.getIcon().toUri()+"');" +
                         "-fx-background-repeat: no-repeat; " +
-                        "-fx-background-position: center;"
+                        "-fx-background-position: center;" +
+                        "-fx-background-size: 100px"
                 );
 
             }

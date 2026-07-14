@@ -5,6 +5,7 @@ import org.launcher.config.ConfigurationControl;
 import org.launcher.config.Localization;
 import org.launcher.exception.BaseException;
 import org.launcher.utils.Exporter;
+import org.launcher.utils.WatchdogClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,24 +93,7 @@ public class AdminService {
     }
 
     public void reboot(){
-        long pid = ProcessHandle.current().pid();
-
-        ProcessHandle.current()
-                .info()
-                .command()
-                .ifPresent(command -> {
-                    try {
-                        new ProcessBuilder(command).start();
-                    } catch (IOException e) {
-                        NotificationService.show("app.reboot.failed","Failed to reboot",false,BaseException.Type.ERROR);
-                        logger.debug("Details: ",e);
-                        Platform.exit();
-                        System.exit(0);
-                    }
-                });
-
         Platform.exit();
-        System.exit(0);
     }
 
     private static void moveToTemp(Path source, Path tempDir) {

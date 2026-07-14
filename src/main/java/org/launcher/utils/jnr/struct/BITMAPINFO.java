@@ -7,6 +7,6 @@ public class BITMAPINFO extends Struct {
 
     public BITMAPINFO(jnr.ffi.Runtime runtime) {
         super(runtime);
-        bmiHeader = new BITMAPINFOHEADER(runtime);
+        bmiHeader = inner(new BITMAPINFOHEADER(runtime));
     }
 }

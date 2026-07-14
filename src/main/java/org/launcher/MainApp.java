@@ -16,10 +16,9 @@ import org.launcher.controller.ui.AdminController;
 import org.launcher.controller.ui.MainController;
 import org.launcher.controller.MainWindowController;
 import org.launcher.controller.ui.WaitController;
-import org.launcher.exception.BaseException;
 import org.launcher.service.NotificationService;
-import org.launcher.utils.PasswordManager;
 import org.launcher.utils.PathManager;
+import org.launcher.utils.WatchdogClient;
 import org.launcher.utils.jnr.lib.User32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +51,7 @@ public class MainApp extends Application {
         if (configurationControl.isLoaded()) {
             keyboardController = new KeyboardController(configurationControl.getConfiguration().getAdmin().getCombination(), this);
         }
+        WatchdogClient.start();
         logger = LoggerFactory.getLogger(MainApp.class);
         Localization.load();
         logger.info("Launcher started");
@@ -70,6 +70,7 @@ public class MainApp extends Application {
             if (keyloggerThread != null) {
                 keyloggerThread.interrupt();
             }
+            WatchdogClient.stop();
         } finally {
             NotificationService.stopExecutor();
             logger.info("Launcher stopped");

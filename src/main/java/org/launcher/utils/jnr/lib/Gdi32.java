@@ -9,6 +9,8 @@ public interface Gdi32 {
     Gdi32 INSTANCE = LibraryLoader.create(Gdi32.class)
             .stdcall()
             .load("gdi32");
+    int BI_RGB = 0;
+    int DIB_RGB_COLORS = 0;
 
     Pointer CreateCompatibleDC(Pointer hdc);
 
@@ -26,5 +28,20 @@ public interface Gdi32 {
             Pointer bits,
             BITMAPINFO bitmapInfo,
             int usage
+    );
+
+    int GetObjectW(
+            Pointer hgdiobj,
+            int cbBuffer,
+            Pointer object
+    );
+
+    Pointer CreateDIBSection(
+            Pointer hdc,
+            BITMAPINFO bitmapInfo,
+            int usage,
+            PointerByReference bits,
+            Pointer section,
+            int offset
     );
 }

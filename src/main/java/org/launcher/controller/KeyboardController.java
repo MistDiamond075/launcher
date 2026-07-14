@@ -62,6 +62,7 @@ public class KeyboardController {
                                 Platform.runLater(() -> {
                                     if (mainApp.getRootId().equals("admin")) {
                                         mainApp.reloadScene(null);
+                                        mainApp.getAdminController().makeAdminMenuActive(false);
                                     } else {
                                         mainApp.reloadScene("admin");
                                     }

@@ -60,6 +60,12 @@ public class ConfigurationControl {
         try {
             if(useDefaultConfig) {
                 InputStream input = loadDefaultConfig();
+                if(input == null) {
+                    logger.error("Default configuration file does not exist");
+                    loaded = false;
+                    loadedFrom = LoadedFrom.FAIL;
+                    return;
+                }
                 configuration = ObjectMapperConfiguration.getMapper().readValue(input, ConfigurationEntity.class);
                 input.close();
             }else {

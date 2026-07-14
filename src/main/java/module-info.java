@@ -20,6 +20,7 @@ module org.launcher {
     opens org.launcher.utils to ch.qos.logback.core;
     opens org.launcher;
     exports org.launcher.controller;
+    exports org.launcher.utils.jnr.struct;
     opens org.launcher.controller to javafx.fxml, tools.jackson.databind;
     exports org.launcher.entity.properties;
     exports org.launcher.config;
@@ -32,4 +33,7 @@ module org.launcher {
     exports org.launcher.controller.ui;
     opens org.launcher.controller.ui to javafx.fxml, tools.jackson.databind;
     opens org.launcher.utils.constants to ch.qos.logback.core;
+    exports org.launcher.utils;
+    exports org.launcher.utils.icons;
+    opens org.launcher.utils.icons to ch.qos.logback.core;
 }

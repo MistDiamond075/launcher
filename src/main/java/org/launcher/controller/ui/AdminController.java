@@ -20,8 +20,11 @@ import org.launcher.exception.BaseException;
 import org.launcher.service.AdminService;
 import org.launcher.service.NotificationService;
 import org.launcher.utils.PasswordManager;
+import org.launcher.utils.WatchdogClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 public class AdminController {
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
@@ -77,7 +80,7 @@ public class AdminController {
         Platform.runLater(() -> {
             TextField field = newPasswordInput.isVisible() ? newPasswordInput : passwordInput;
             switch (input) {
-                case "ENTER" -> field.fireEvent(new ActionEvent(field,field));
+                case "ENTER" -> field.fireEvent(new ActionEvent());
                 case "BACKSPACE" -> field.deletePreviousChar();
                 case "DELETE" -> field.deleteNextChar();
                 case "SPACE" -> field.appendText(" ");
@@ -88,7 +91,12 @@ public class AdminController {
         });
     }
 
+    public void makeAdminMenuActive(boolean active){
+        buttonsContainer.setDisable(!active);
+    }
+
     private void authorizeListener(){
+        makeAdminMenuActive(false);
         passwordInput.setOnAction(e -> {
             if(!PasswordManager.isPasswordValid(passwordInput.getText())){
                 logger.warn("Log in attempt failed: invalid password");
@@ -104,6 +112,7 @@ public class AdminController {
                     passwordScreen.setVisible(false);
                 }
                 passwordInput.clear();
+                makeAdminMenuActive(true);
             }
         });
         newPasswordInput.setOnAction(e -> {
@@ -114,6 +123,7 @@ public class AdminController {
             passwordInput.setManaged(true);
             passwordScreen.setVisible(false);
             newPasswordInput.clear();
+            makeAdminMenuActive(true);
         });
     }
 
@@ -147,6 +157,12 @@ public class AdminController {
                 e ->{
                     NotificationService.show("app.shutdown","Shutting down",false, BaseException.Type.INFO);
                     PauseTransition pause = new PauseTransition(Duration.seconds(1));
+                    try {
+                        WatchdogClient.shutdownWatchdog();
+                    } catch (IOException ex) {
+                        logger.error("Failed to shutdown watchdog");
+                        logger.debug("Details: ",ex);
+                    }
                     pause.setOnFinished(event -> Platform.exit());
                     pause.play();
                 });
