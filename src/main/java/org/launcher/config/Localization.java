@@ -13,21 +13,12 @@ public class Localization {
 
     public static void load() {
         try {
-            messages = ResourceBundle.getBundle(
-                    "messages",
-                    Locale.forLanguageTag("ru"));
+            messages = ResourceBundle.getBundle("messages", Locale.forLanguageTag("ru"));
         } catch (MissingResourceException e) {
             logger.error("Failed to load localization messages");
-            logger.debug(String.valueOf(e));
+            logger.debug("Details: ", e);
+            messages = null;
         }
-//        try (InputStream in = MainApp.class.getClassLoader().getResourceAsStream("messages.lc")) {
-//            messages.load(in);
-//            loaded = true;
-//        } catch (IOException e) {
-//            logger.error("Failed to load localization messages");
-//            logger.debug(String.valueOf(e));
-//            loaded = false;
-//        }
     }
 
     public static String get(String key) {

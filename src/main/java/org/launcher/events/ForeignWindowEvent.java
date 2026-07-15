@@ -78,8 +78,7 @@ public class ForeignWindowEvent implements AutoCloseable{
             return;
         }
 
-        if (idObject != WindowEventConstants.OBJID_WINDOW
-                || idChild != WindowEventConstants.CHILDID_SELF) {
+        if (idObject != WindowEventConstants.OBJID_WINDOW || idChild != WindowEventConstants.CHILDID_SELF) {
             return;
         }
 
@@ -109,16 +108,15 @@ public class ForeignWindowEvent implements AutoCloseable{
                     app.getHwnds().add(hwnd);
                 }
             }
-            //Platform.runLater(() -> instance.setState(InstanceEntity.State.RUNNING));
             char[] title = new char[512];
             user32.GetWindowTextW(hwndPtr, title, title.length);
-            logger.debug("Created window pid={}, hwnd={},title={},visible={},topLevel={},hwnds={}", pid, hwnd, new String(title).trim(), visible, topLevel,instance.getHwnds());
+           // logger.debug("Created window pid={}, hwnd={},title={},visible={},topLevel={},hwnds={}", pid, hwnd, new String(title).trim(), visible, topLevel,instance.getHwnds());
         }
         else if (event == WindowEventConstants.EVENT_SYSTEM_FOREGROUND) {
             if(instance.getHwnds().contains(hwnd)) {
                 Platform.runLater(() -> instance.setForeground(true));
             }
-            logger.debug("Foreground window pid={}, hwnd={}", pid, hwnd);
+        //    logger.debug("Foreground window pid={}, hwnd={}", pid, hwnd);
         }
         else if(event == EVENT_OBJECT_DESTROY){
             instance.getHwnds().remove(hwnd);
@@ -126,12 +124,11 @@ public class ForeignWindowEvent implements AutoCloseable{
             if(!instance.getHwnds().isEmpty() && instance.getState() != InstanceEntity.State.STARTING) {
                 closeWindowScheduler.scheduleClose(instance);
             }else{
-              //  Platform.runLater(() -> instance.setState(InstanceEntity.State.CLOSED));
                 if(instance.getState() != InstanceEntity.State.STARTING) {
                     closeWindowScheduler.scheduleClose(instance);
                 }
             }
-            logger.debug("Destroyed window: pid={}, hwnd={}, hwnds={}", pid, hwnd,instance.getHwnds());
+           // logger.debug("Destroyed window: pid={}, hwnd={}, hwnds={}", pid, hwnd,instance.getHwnds());
         }
         else if(event == EVENT_SYSTEM_MINIMIZESTART){
             if(instance.getHwnds().contains(hwnd)) {
@@ -198,10 +195,7 @@ public class ForeignWindowEvent implements AutoCloseable{
 
         while (running) {
             int rc = user32.GetMessageW(msg, null, 0, 0);
-            if (rc == 0) {   // WM_QUIT
-                break;
-            }
-            if (rc < 0) {
+            if (rc <= 0) {
                 break;
             }
             user32.TranslateMessage(msg);

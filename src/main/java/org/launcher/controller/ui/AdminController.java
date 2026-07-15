@@ -1,6 +1,5 @@
 package org.launcher.controller.ui;
 
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -13,18 +12,14 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.TextAlignment;
-import javafx.util.Duration;
 import org.launcher.async.AdminSessionControlAsync;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.exception.BaseException;
 import org.launcher.service.AdminService;
 import org.launcher.service.NotificationService;
 import org.launcher.utils.PasswordManager;
-import org.launcher.utils.WatchdogClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class AdminController {
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
@@ -77,18 +72,20 @@ public class AdminController {
     }
 
     public void appendInput(String input){
-        Platform.runLater(() -> {
-            TextField field = newPasswordInput.isVisible() ? newPasswordInput : passwordInput;
-            switch (input) {
-                case "ENTER" -> field.fireEvent(new ActionEvent());
-                case "BACKSPACE" -> field.deletePreviousChar();
-                case "DELETE" -> field.deleteNextChar();
-                case "SPACE" -> field.appendText(" ");
-                case "R_ARROW" -> field.forward();
-                case "L_ARROW" -> field.backward();
-                default -> field.appendText(input);
-            }
-        });
+        if(input != null) {
+            Platform.runLater(() -> {
+                TextField field = newPasswordInput.isVisible() ? newPasswordInput : passwordInput;
+                switch (input) {
+                    case "ENTER" -> field.fireEvent(new ActionEvent());
+                    case "BACKSPACE" -> field.deletePreviousChar();
+                    case "DELETE" -> field.deleteNextChar();
+                    case "SPACE" -> field.appendText(" ");
+                    case "RIGHT" -> field.forward();
+                    case "LEFT" -> field.backward();
+                    default -> field.appendText(input);
+                }
+            });
+        }
     }
 
     public void makeAdminMenuActive(boolean active){
@@ -99,15 +96,13 @@ public class AdminController {
         makeAdminMenuActive(false);
         passwordInput.setOnAction(e -> {
             if(!PasswordManager.isPasswordValid(passwordInput.getText())){
+                NotificationService.show("admin.login.password.fail","Wrong password",false, BaseException.Type.ERROR);
                 logger.warn("Log in attempt failed: invalid password");
             }else{
                 logger.info("Logged successfully");
                 AdminSessionControlAsync.start();
                 if(!PasswordManager.isPasswordHash()){
-                    passwordInput.setVisible(false);
-                    newPasswordInput.setVisible(true);
-                    passwordInput.setManaged(false);
-                    newPasswordInput.setManaged(true);
+                    switchInputFields(newPasswordInput,passwordInput);
                 }else {
                     passwordScreen.setVisible(false);
                 }
@@ -117,14 +112,18 @@ public class AdminController {
         });
         newPasswordInput.setOnAction(e -> {
             PasswordManager.setPassword(newPasswordInput.getText());
-            newPasswordInput.setManaged(false);
-            newPasswordInput.setVisible(false);
-            passwordInput.setVisible(true);
-            passwordInput.setManaged(true);
+            switchInputFields(passwordInput,newPasswordInput);
             passwordScreen.setVisible(false);
             newPasswordInput.clear();
             makeAdminMenuActive(true);
         });
+    }
+
+    private void switchInputFields(TextField lead, TextField tail){
+        lead.setManaged(true);
+        lead.setVisible(true);
+        tail.setManaged(false);
+        tail.setVisible(false);
     }
 
     private void addControlButtons() {
@@ -133,7 +132,9 @@ public class AdminController {
                 e -> {
                     NotificationService.show("conf.load.processing","Loading config...",false, BaseException.Type.INFO);
                     Process editor = adminService.openTextEditor(String.valueOf(configurationControl.getConfigPath()));
-                    editor.onExit().thenRun(configurationControl::reload);
+                    if(editor != null) {
+                        editor.onExit().thenRun(configurationControl::reload);
+                    }
                 }
         );
         Button openLogsButton = createButton(
@@ -156,15 +157,7 @@ public class AdminController {
                 "Выключить",
                 e ->{
                     NotificationService.show("app.shutdown","Shutting down",false, BaseException.Type.INFO);
-                    PauseTransition pause = new PauseTransition(Duration.seconds(1));
-                    try {
-                        WatchdogClient.shutdownWatchdog();
-                    } catch (IOException ex) {
-                        logger.error("Failed to shutdown watchdog");
-                        logger.debug("Details: ",ex);
-                    }
-                    pause.setOnFinished(event -> Platform.exit());
-                    pause.play();
+                    adminService.shutdown();
                 });
 
         Button restartButton = createButton(
@@ -187,26 +180,24 @@ public class AdminController {
 
     private void setConfigStatusText(){
         switch (configurationControl.getLoadedFrom()){
-            case PARAMETER -> configStatus.setText("Configuration status: Loaded from parameter");
-            case APP_DIRECTORY -> configStatus.setText("Configuration status: Loaded nearest config from app directory");
-            case DEFAULT -> configStatus.setText("Configuration status: Loaded default config");
+            case PARAMETER -> configStatus.setText("Configuration status: Загружена из параметра");
+            case APP_DIRECTORY -> configStatus.setText("Configuration status: Загружена конфигурация из папки приложения");
+            case DEFAULT -> configStatus.setText("Configuration status: Загружена конфигурация по умолчанию");
             case FAIL -> configStatus.setText("Configuration status: FAILED");
-            default -> configStatus.setText("Configuration status: Source unknown, but OK");
+            default -> configStatus.setText("Configuration status: Источник неизвестен, статус OK");
         }
     }
 
     private Button createButton(String text, EventHandler<javafx.event.ActionEvent> handler){
         Button button = new Button();
         Label t = new Label(text);
-        t.getStyleClass().add("app-container-button-label");
+        t.getStyleClass().add("app-container-button-text");
         t.setTextAlignment(TextAlignment.CENTER);
         t.setWrapText(true);
         button.setGraphic(t);
         button.setAlignment(Pos.CENTER);
         button.getStyleClass().add("app-container-button");
         button.setOnAction(handler);
-//        t.maxWidthProperty().bind(button.widthProperty().subtract(20));
-
         return button;
     }
 }

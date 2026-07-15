@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.launcher.async.AdminSessionControlAsync;
+import org.launcher.async.UiTimer;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.config.Localization;
 import org.launcher.controller.KeyboardController;
@@ -70,6 +71,7 @@ public class MainApp extends Application {
             if (keyloggerThread != null) {
                 keyloggerThread.interrupt();
             }
+            UiTimer.stop();
             WatchdogClient.stop();
         } finally {
             NotificationService.stopExecutor();
@@ -117,8 +119,7 @@ public class MainApp extends Application {
             switch (viewType) {
                 case "main" -> {
                     Platform.runLater(() -> {
-                        //Pointer hwnd_ptr = User32.INSTANCE.GetForegroundWindow();
-                        long hwnd = findWindow(stage);//hwnd_ptr.address();//getHwnd();
+                        long hwnd = findWindow(stage);
                         mainWindowController.setHwnd(hwnd);
                         applyNoActivate(hwnd);
                     });
@@ -150,6 +151,7 @@ public class MainApp extends Application {
     }
 
     public static void main(String[] args) {
+       // System.out.println(KeyboardEventConstants.INTKEYS_STRKEYS.get(39));
        launch(args);
     }
 
@@ -202,14 +204,10 @@ public class MainApp extends Application {
     private void stopAllControllers() {
         if (mainController != null) {
             mainController.stopAll();
-            mainController = null;
         }
-        if (waitController != null) {
-            waitController = null;
-        }
-        if(adminController != null) {
-            adminController = null;
-        }
+        mainController = null;
+        waitController = null;
+        adminController = null;
     }
 
     private long findWindow(Stage stage) {

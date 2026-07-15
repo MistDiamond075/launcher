@@ -57,7 +57,7 @@ public class AdminEntity implements BaseEntity {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         AdminEntity that = (AdminEntity) o;
-        return sessionTimeout == that.sessionTimeout && Objects.equals(password, that.password);
+        return Objects.equals(sessionTimeout, that.sessionTimeout) && Objects.equals(password, that.password);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class AdminEntity implements BaseEntity {
         for (String token : value.split("\\+")) {
             token = token.trim().toUpperCase();
 
-            Integer vk = KeyboardEventConstants.KEYS.get(token);
+            Integer vk = KeyboardEventConstants.STRKEYS_INTKEYS.get(token);
             if (vk != null) {
                 result.add(vk);
                 continue;

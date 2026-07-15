@@ -54,6 +54,3 @@ public class LauncherFileAppender {
         appender.setTriggeringPolicy(policy);
     }
 }
-//доделать логирование в файл
-//доделать пользовательские уведомления
-//продолжить работу с исключениями

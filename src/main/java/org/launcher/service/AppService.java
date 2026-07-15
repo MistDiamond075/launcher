@@ -52,7 +52,7 @@ public class AppService {
             logger.info("Started application {}, PID: {}",entity.getId(),process.pid());
             NotificationService.show("service.apps.app.start.success","App started",false, BaseException.Type.INFO);
         } catch (NullPointerException | IOException e) {
-            logger.error("Failed to start process: {}",e.getMessage());
+            logger.error("Failed to start process: {}",entity);
             logger.debug("Details: ", e);
             NotificationService.show("service.apps.app.start.fail","Failed to start app",false,BaseException.Type.ERROR);
         }

@@ -10,11 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +32,7 @@ public class AppEntity implements BaseEntity{
     private final boolean restartOnError;
     private final Integer maxRuntime;
     @JsonIgnore
-    private Set<Long> hwnds = new HashSet<>();
+    private final Set<Long> hwnds = new HashSet<>();
 
     @JsonCreator
     public AppEntity(
@@ -173,8 +168,12 @@ public class AppEntity implements BaseEntity{
             if(this.path == null){
                 return;
             }
-            String ico = IconManager.make(String.valueOf(path));
-            icon = ico != null ? PathManager.normalize(ico) : null;
+            try {
+                String ico = IconManager.make(String.valueOf(path));
+                icon = ico != null ? PathManager.normalize(ico) : null;
+            } catch (Exception e) {
+                icon = null;
+            }
         }
     }
 

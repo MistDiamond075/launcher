@@ -46,8 +46,5 @@ public class AppLogger {
             default -> appender = LauncherConsoleAppender.create(context, encoder);
         }
         root.addAppender(appender);
-        //System.out.println(appender.isStarted());
-        //System.out.println(encoder.isStarted());
-        //StatusPrinter.print(context);
     }
 }

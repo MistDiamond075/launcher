@@ -45,9 +45,7 @@ public class LauncherEntity implements BaseEntity{
         try{
             Path pathToTitle = Paths.get(title);
             isPic = Files.exists(pathToTitle);
-        } catch (Exception e) {
-            logger.debug(e.getMessage());
-            isPic = false;
+        } catch (Exception ignored) {
         }finally{
             isTitlePicture = isPic;
         }
@@ -55,22 +53,6 @@ public class LauncherEntity implements BaseEntity{
 
     public String getTitle() {
         return title;
-    }
-
-    public String getOrgName() {
-        return orgName;
-    }
-
-    public boolean isFullscreen() {
-        return fullscreen;
-    }
-
-    public boolean isShowDate() {
-        return showDate;
-    }
-
-    public boolean isHideCursor() {
-        return hideCursor;
     }
 
     public boolean isTitlePicture() {

@@ -11,9 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class WatchdogClient {
-    private static final Path PIPE =
-            Path.of("\\\\.\\pipe\\LauncherWatchdog");
-
+    private static final Path PIPE = Path.of("\\\\.\\pipe\\LauncherWatchdog");
     private static final long FX_TIMEOUT = TimeUnit.SECONDS.toNanos(5);
     private static final byte CMD_HEARTBEAT = 1;
     private static final byte CMD_EXIT = 2;

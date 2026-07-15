@@ -23,6 +23,4 @@ public interface Shell32 {
             String file,
             int index
     );
-
-
 }

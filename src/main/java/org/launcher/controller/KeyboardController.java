@@ -1,7 +1,6 @@
 package org.launcher.controller;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import jnr.ffi.Memory;
 import jnr.ffi.Pointer;
 import org.launcher.MainApp;
@@ -26,6 +25,7 @@ public class KeyboardController {
     private int hookThreadId;
     private final MainApp mainApp;
     private final byte[] keyState = new byte[256];
+    private final char[] unicodeBuffer = new char[8];
 
     public KeyboardController(Set<Integer> hotkey, MainApp mainApp) {
         this.hotkey = Set.copyOf(hotkey);
@@ -34,13 +34,13 @@ public class KeyboardController {
 
     public void start() {
         proc = (nCode, wParam, lParam) -> {
-            logger.debug(
-                    "msg={}, vk={}, scan={}, flags={}",
-                    wParam.address(),
-                    lParam.getInt(0),
-                    lParam.getInt(4),
-                    lParam.getInt(8)
-            );
+//            logger.debug(
+//                    "msg={}, vk={}, scan={}, flags={}",
+//                    wParam.address(),
+//                    lParam.getInt(0),
+//                    lParam.getInt(4),
+//                    lParam.getInt(8)
+//            );
             if (nCode >= 0) {
                 int vk = normalizeVk(lParam.getInt(0));
 
@@ -57,18 +57,17 @@ public class KeyboardController {
                         logger.debug("firstpress={}, vk={},pressed={}, hotkey={}", firstPress, vk,pressed, hotkey);
                         if (firstPress && pressed.equals(hotkey)) {
                             try {
-                                //NotificationService.show("app.shutdown","Shutting down...", null,BaseException.Type.INFO);
-                               // Platform.runLater(Platform::exit);
                                 Platform.runLater(() -> {
                                     if (mainApp.getRootId().equals("admin")) {
-                                        mainApp.reloadScene(null);
                                         mainApp.getAdminController().makeAdminMenuActive(false);
+                                        mainApp.reloadScene(null);
                                     } else {
                                         mainApp.reloadScene("admin");
                                     }
                                 });
                             } catch (Exception e) {
-                                throw new RuntimeException(e);
+                                logger.error("Failed to reload scene");
+                                logger.debug("Details: ", e);
                             }
                         }
                         if(mainApp.getRootId().equals("admin") && mainApp.getAdminController().getPasswordScreen().isVisible()) {
@@ -127,9 +126,9 @@ public class KeyboardController {
 
     private int normalizeVk(int vk) {
         return switch (vk) {
-            case 0xA0, 0xA1 -> 0x10; // LSHIFT, RSHIFT -> SHIFT
-            case 0xA2, 0xA3 -> 0x11; // LCTRL, RCTRL -> CONTROL
-            case 0xA4, 0xA5 -> 0x12; // LALT, RALT -> MENU
+            case 0xA0, 0xA1 -> 0x10;
+            case 0xA2, 0xA3 -> 0x11;
+            case 0xA4, 0xA5 -> 0x12;
             default -> vk;
         };
     }
@@ -141,39 +140,20 @@ public class KeyboardController {
         );
 
         if (mainApp.getAdminController() != null) {
-            switch(normalizeVk(lParam.getInt(0))) {
-                case 13 ->  mainApp.getAdminController().appendInput("ENTER");
-                case 8 -> mainApp.getAdminController().appendInput("BACKSPACE");
-                case 32 -> mainApp.getAdminController().appendInput("SPACE");
-                case 46 -> mainApp.getAdminController().appendInput("DELETE");
-                case 39 -> mainApp.getAdminController().appendInput("R_ARROW");
-                case 37 -> mainApp.getAdminController().appendInput("L_ARROW");
-                default -> {
-                    if(text != null) {
-                        mainApp.getAdminController().appendInput(text);
-                    }
-                }
-            }
+            mainApp.getAdminController().appendInput(INTKEYS_STRKEYS.getOrDefault(lParam.getInt(0),text));
         }
     }
 
     private String vkToUnicode(int vk, int scan) {
-        char[] buffer = new char[8];
-
         int len = User32.INSTANCE.ToUnicodeEx(
                 vk,
                 scan,
                 keyState,
-                buffer,
-                buffer.length,
+                unicodeBuffer,
+                unicodeBuffer.length,
                 0,
                 User32.INSTANCE.GetKeyboardLayout(0)
         );
-
-        if (len > 0) {
-            return new String(buffer, 0, len);
-        }
-
-        return null;
+        return len > 0 ? new String(unicodeBuffer, 0, len) : null;
     }
 }

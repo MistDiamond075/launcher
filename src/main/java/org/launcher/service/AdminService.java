@@ -1,6 +1,8 @@
 package org.launcher.service;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.util.Duration;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.config.Localization;
 import org.launcher.exception.BaseException;
@@ -9,14 +11,11 @@ import org.launcher.utils.WatchdogClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -29,11 +28,11 @@ public class AdminService {
     }
 
     public Process openTextEditor(String path) {
-        File file = new File(path);
         try {
             return new ProcessBuilder("notepad.exe", path).start();
         } catch (IOException e) {
             NotificationService.show("admin.txt.open.fail", "Failed to open text editor",false, BaseException.Type.ERROR);
+            logger.error("Failed to open text editor");
             logger.debug("Details: ",e);
             return null;
         }
@@ -54,11 +53,13 @@ public class AdminService {
                 Exporter.exportLogsRecurse(tempDir);
             } catch (IOException e) {
                 NotificationService.show("admin.txt.export.fail", "Failed to create temp directory",false, BaseException.Type.ERROR);
+                logger.error("Failed to create temp directory");
                 logger.debug("Details: ",e);
                 return;
             }
             } catch (IOException e) {
                NotificationService.show("admin.logs.export.fail", "Failed to export logs",false, BaseException.Type.ERROR);
+                logger.error("Failed to export logs");
                logger.debug("Details: ",e);
                return;
             }
@@ -67,11 +68,12 @@ public class AdminService {
                 Exporter.exportLogs(path);
             } catch (IOException e) {
                 NotificationService.show("admin.logs.export.fail", "Failed to export logs",false, BaseException.Type.ERROR);
+                logger.error("Failed to export logs");
                 logger.debug("Details: ",e);
                 return;
             }
         }
-        logger.info("Logs exported");
+        logger.info("Logs exported to {}", Exporter.getExportPath());
         NotificationService.show(
                 MessageFormat.format(
                         Localization.get("admin.logs.export.success"),
@@ -88,11 +90,26 @@ public class AdminService {
             new ProcessBuilder("explorer.exe").start();
         } catch (IOException e) {
             NotificationService.show("admin.explorer.fail", "Failed to start explorer",false, BaseException.Type.ERROR);
+            logger.error("Failed to start explorer");
             logger.debug("Details: ",e);
         }
     }
 
+    public void shutdown(){
+        logger.info("Shutting down");
+        PauseTransition pause = new PauseTransition(Duration.seconds(1));
+        try {
+            WatchdogClient.shutdownWatchdog();
+        } catch (IOException ex) {
+            logger.error("Failed to shutdown watchdog");
+            logger.debug("Details: ",ex);
+        }
+        pause.setOnFinished(event -> Platform.exit());
+        pause.play();
+    }
+
     public void reboot(){
+        logger.info("Rebooting");
         Platform.exit();
     }
 
@@ -103,11 +120,10 @@ public class AdminService {
                     tempDir.resolve(source.getFileName()),
                     StandardCopyOption.REPLACE_EXISTING
             );
-
-            System.out.println("Moved: " + source.getFileName());
-
+            logger.debug("Log file {} moved to {}", source, tempDir);
         } catch (IOException e) {
-            System.err.println("Failed to move " + source + ": " + e.getMessage());
+            logger.error("Failed to move log file {}",source);
+            logger.debug("Details: ",e);
         }
     }
 }

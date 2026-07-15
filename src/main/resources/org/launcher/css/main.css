@@ -4,6 +4,9 @@
     -fx-text-fill: #ffffff;
     -fx-font-size: 30px;
 }
+.header-logo{
+    -fx-padding:20px 0px 0px 0px;
+}
 .wait-label{
     -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
@@ -48,9 +51,9 @@
     -fx-cursor: hand;
 }
 .app-container-button-text{
-    -fx-background-color: rgba(255, 255, 255);
+   /* -fx-background-color: rgba(255, 255, 255);*/
     -fx-text-fill: #e8e8e8;
-    -fx-fill: #e8e8e8;
+   /* -fx-fill: #e8e8e8;*/
     -fx-effect: dropshadow(two-pass-box,
     rgba(0,0,0),
     2, 0.2, 0, 0);

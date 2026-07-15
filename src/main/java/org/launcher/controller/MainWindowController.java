@@ -49,11 +49,10 @@ public class MainWindowController {
             long uIdSubclass,
             long dwRefData
     ) {
-       // logger.debug("+++++++++++++++++++ MSG: {}",msg);
         switch (msg) {
 
             case WM_MOUSEACTIVATE -> {
-                logger.debug("Mouse activated");
+             //   logger.debug("Mouse activated");
                 AdminSessionControlAsync.delayTermination();
                 return MA_NOACTIVATE;
             }

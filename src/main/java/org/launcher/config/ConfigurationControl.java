@@ -10,11 +10,10 @@ import org.launcher.utils.logging.AppLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
-import tools.jackson.databind.node.ObjectNode;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -49,7 +48,6 @@ public class ConfigurationControl {
             return;
         }
         reload();
-        //loaded = false;
     }
 
     public ConfigurationEntity getConfiguration() {
@@ -68,6 +66,7 @@ public class ConfigurationControl {
                 }
                 configuration = ObjectMapperConfiguration.getMapper().readValue(input, ConfigurationEntity.class);
                 input.close();
+                loadedFrom = LoadedFrom.DEFAULT;
             }else {
                 configuration = ObjectMapperConfiguration.getMapper().readValue(configPath.toFile(), ConfigurationEntity.class);
             }
@@ -97,9 +96,6 @@ public class ConfigurationControl {
                 loaded = false;
                 loadedFrom = LoadedFrom.FAIL;
             }
-        }
-        if(useDefaultConfig) {
-            loadedFrom = LoadedFrom.DEFAULT;
         }
     }
 
@@ -132,9 +128,14 @@ public class ConfigurationControl {
             logger.error("Failed to load default configuration: inputStream is null");
             NotificationService.show("conf.load.error","Failed to load default configuration",false, BaseException.Type.ERROR);
         }else {
-            String path_raw = MainApp.class.getResource("/config.json").getPath();
-            path_raw = path_raw.startsWith("/") ? path_raw.substring(1) : path_raw;
-            configPath = PathManager.normalize(path_raw);
+            URL resource = MainApp.class.getResource("/config.json");
+            if(resource != null) {
+                String path_raw = resource.getPath();
+                path_raw = path_raw.startsWith("/") ? path_raw.substring(1) : path_raw;
+                configPath = PathManager.normalize(path_raw);
+            }else {
+                configPath = null;
+            }
         }
         return is;
     }

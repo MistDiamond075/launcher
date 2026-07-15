@@ -9,15 +9,12 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.stage.Screen;
 import org.launcher.async.UiTimer;
 import org.launcher.config.ConfigurationControl;
@@ -31,8 +28,8 @@ import org.launcher.ui.GradientAnimator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,7 +38,7 @@ public class MainController {
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
     private final ConfigurationControl configurationControl;
     private final AppService appService;
-    private final Map<String,Button> app_button_all = new LinkedHashMap<>();
+    private final Map<String,Node> app_button_all = new LinkedHashMap<>();
     private int maxButtonsPerPage = 0;
     private int currentPage = 0;
     private int pages = 0;
@@ -101,7 +98,6 @@ public class MainController {
             rootStackPane.getChildren().addFirst(background);
             appsBorderPane.getStyleClass().remove("main-container");
         }
-        //timer = new Label();
         timer.getStyleClass().add("timer");
         UiTimer.start(timer);
 
@@ -110,12 +106,21 @@ public class MainController {
 
     public void stopAll(){
         appService.shutdownWindowEvent();
-        UiTimer.stop();
     }
 
     private void setHeader(){
         if(configurationControl.getConfiguration().getLauncher().isTitlePicture()){
-
+            ImageView imageHeader = new ImageView(
+                    new Image(Path.of(configurationControl.getConfiguration()
+                            .getLauncher()
+                            .getTitle()).toUri().toString())
+            );
+            headerContainer.getStyleClass().add("header-logo");
+            imageHeader.setPreserveRatio(true);
+            imageHeader.setFitWidth(400);
+            imageHeader.setFitHeight(150);
+            StackPane.setAlignment(imageHeader, Pos.TOP_CENTER);
+            headerContainer.getChildren().add(imageHeader);
         }else {
             Label labelHeader = new Label();
             labelHeader.getStyleClass().add("header");
@@ -123,9 +128,6 @@ public class MainController {
             StackPane.setAlignment(labelHeader,Pos.TOP_CENTER);
             headerContainer.getChildren().add(labelHeader);
         }
-       // StackPane.setAlignment(timer,Pos.TOP_RIGHT);
-       // StackPane.setMargin(timer,new Insets(0,10,0,0));
-       // headerContainer.getChildren().add(timer);
     }
 
     private void setAppList(){
@@ -133,8 +135,9 @@ public class MainController {
         for(AppEntity app : apps){
 
             Button appButton = new Button();
-            Text t = new Text(app.getName());
+            Label t = new Label(app.getName());
             t.getStyleClass().add("app-container-button-text");
+            t.setWrapText(false);
             appButton.setGraphic(t);
             appButton.setAlignment(Pos.BOTTOM_CENTER);
             appButton.getStyleClass().add("app-container-button");
@@ -171,14 +174,19 @@ public class MainController {
                 StackPane.setMargin(instanceCount, new Insets(-8, -8, 0, 0));
                 fullButton.getChildren().add(badge);
                 appsContainer.getChildren().add(fullButton);
+                app_button_all.put(app.getId(), fullButton);
+                if(!app.isEnabled()){
+                    fullButton.getStyleClass().add("app-container-button-disabled");
+                    fullButton.setMouseTransparent(true);
+                }
             }else{
                 appsContainer.getChildren().add(appButton);
+                app_button_all.put(app.getId(), appButton);
             }
             if(!app.isEnabled()){
                 appButton.getStyleClass().add("app-container-button-disabled");
                 appButton.setMouseTransparent(true);
             }
-            app_button_all.put(app.getId(), appButton);
             logger.debug("Loaded app {}", app.getId());
         }
         logger.info("Loaded {} apps", apps.size());
@@ -210,13 +218,13 @@ public class MainController {
         Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
         double width = visualBounds.getWidth();
         double height = visualBounds.getHeight();
-        Optional<Button> btn_opt = app_button_all.values().stream().findFirst();
+        Optional<Node> btn_opt = app_button_all.values().stream().findFirst();
         if(btn_opt.isEmpty()){
             return;
         }
-        Button btn = btn_opt.get();
-        double buttonVerticalSize = btn.getHeight() + appsContainer.getVgap();
-        double buttonHorizontalSize = btn.getWidth() + appsContainer.getHgap();
+        Node btn = btn_opt.get();
+        double buttonVerticalSize = btn.getLayoutBounds().getHeight() + appsContainer.getVgap();
+        double buttonHorizontalSize = btn.getLayoutBounds().getWidth() + appsContainer.getHgap();
         int cols = (int)(width / buttonHorizontalSize);
         int rows = ((int)(height / buttonVerticalSize)) - 1;
         maxButtonsPerPage = cols * rows;
@@ -269,7 +277,7 @@ public class MainController {
 
         IntegerProperty counter = appCounters.get(appId);
         if (counter != null) {
-            counter.set(counter.get() + 1);
+            counter.set(instance.getApp().getHwnds().size());
         }
 
         attachStateListener(instance);
@@ -281,7 +289,7 @@ public class MainController {
 
         IntegerProperty counter = appCounters.get(appId);
         if (counter != null) {
-            counter.set(Math.max(0, counter.get() - 1));
+            counter.set(instance.getApp().getHwnds().size());
         }
 
         detachStateListener(instance);
@@ -308,12 +316,11 @@ public class MainController {
     }
 
     private void updateButtonState(InstanceEntity instance) {
-        Button button = app_button_all.get(instance.getApp().getId());
+        Node button = app_button_all.get(instance.getApp().getId());
         AppEntity app = instance.getApp();
         if (button == null) {
             return;
         }
-        //logger.info("State: {},pid: {},alive: {}", instance.getState(),instance.getProcess().pid(),instance.getProcess().isAlive());
         switch (instance.getState()) {
             case RUNNING -> {
                 if (!button.getStyleClass().contains("app-container-button-active")) {
@@ -334,7 +341,7 @@ public class MainController {
     }
 
     private void setAppsOnPage(){
-        Map<String, Button> app_button = app_button_all.entrySet()
+        Map<String, Node> app_button = app_button_all.entrySet()
                 .stream()
                 .skip((long) currentPage * maxButtonsPerPage)
                 .limit(maxButtonsPerPage)

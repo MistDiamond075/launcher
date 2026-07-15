@@ -20,16 +20,6 @@ public interface Gdi32 {
 
     boolean DeleteDC(Pointer hdc);
 
-    int GetDIBits(
-            Pointer hdc,
-            Pointer hBitmap,
-            int startScan,
-            int scanLines,
-            Pointer bits,
-            BITMAPINFO bitmapInfo,
-            int usage
-    );
-
     int GetObjectW(
             Pointer hgdiobj,
             int cbBuffer,
