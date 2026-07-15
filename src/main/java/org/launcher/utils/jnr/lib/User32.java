@@ -97,11 +97,8 @@ public interface User32 {
     );
     Pointer GetDC(Pointer hwnd);
     int ReleaseDC(Pointer hwnd, Pointer hdc);
-    boolean GetIconInfo(
-            Pointer hIcon,
-            ICONINFO iconInfo
-    );
-
+    boolean GetIconInfo(Pointer hIcon, ICONINFO iconInfo);
+    int ShowWindow(Pointer hWnd, int nCmdShow);
     int PrivateExtractIconsW(
             @Encoding("UTF-16LE") String file,
             int iconIndex,

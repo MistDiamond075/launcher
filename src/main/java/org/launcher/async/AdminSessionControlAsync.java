@@ -24,8 +24,8 @@ public class AdminSessionControlAsync {
     }
 
     public static void start() {
-        int timeout = configurationControl.getConfiguration().getAdmin().getSessionTimeout();
-        if(timeout > 0) {
+        Integer timeout = configurationControl.getConfiguration().getAdmin().getSessionTimeout();
+        if(timeout != null) {
              scheduledFuture = scheduler.schedule(() ->{
                  app.reloadScene(null);
                 logger.warn("Admin session timeout");

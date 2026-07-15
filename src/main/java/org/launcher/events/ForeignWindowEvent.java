@@ -112,6 +112,26 @@ public class ForeignWindowEvent implements AutoCloseable{
             user32.GetWindowTextW(hwndPtr, title, title.length);
            // logger.debug("Created window pid={}, hwnd={},title={},visible={},topLevel={},hwnds={}", pid, hwnd, new String(title).trim(), visible, topLevel,instance.getHwnds());
         }
+        else if(event == EVENT_OBJECT_CREATE){
+            long style = User32.INSTANCE.GetWindowLongPtrA(hwnd, GWL_STYLE);
+
+            style &= ~WS_MINIMIZEBOX;
+
+            User32.INSTANCE.SetWindowLongPtrA(hwnd, GWL_STYLE, style);
+
+            User32.INSTANCE.SetWindowPos(
+                    hwnd,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    SWP_FRAMECHANGED
+                            | SWP_NOMOVE
+                            | SWP_NOSIZE
+                            | SWP_NOZORDER
+            );
+        }
         else if (event == WindowEventConstants.EVENT_SYSTEM_FOREGROUND) {
             if(instance.getHwnds().contains(hwnd)) {
                 Platform.runLater(() -> instance.setForeground(true));

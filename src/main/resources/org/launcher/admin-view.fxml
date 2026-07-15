@@ -34,7 +34,7 @@
         prefHeight="Infinity"
         prefWidth="Infinity"
     >
-        <TextField fx:id="passwordInput" promptText="Пароль" styleClass="password-input" prefWidth="420" prefHeight="40"/>
+        <PasswordField fx:id="passwordInput" promptText="Пароль" styleClass="password-input" prefWidth="420" prefHeight="40"/>
         <TextField fx:id="newPasswordInput" promptText="Новый пароль" styleClass="password-input" prefHeight="40" prefWidth="420"/>
     </HBox>
 </StackPane>

@@ -31,7 +31,7 @@ public class AdminController {
     @FXML
     private StackPane rootStackPane;
     @FXML
-    private TextField passwordInput;
+    private PasswordField passwordInput;
     @FXML
     private TextField newPasswordInput;
     @FXML

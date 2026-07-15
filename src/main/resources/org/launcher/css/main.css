@@ -89,7 +89,7 @@
     -fx-font-style: italic;
     -fx-font-size: 40px;
 }
-.app-container-button:hover{
+.app-container-button:hover {
     -fx-background-color:
             rgba(255,255,255,0.42),
             linear-gradient(from 0% 0% to 0% 100%,
