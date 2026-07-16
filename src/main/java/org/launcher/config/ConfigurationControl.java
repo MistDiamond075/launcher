@@ -37,7 +37,9 @@ public class ConfigurationControl {
             configPath = Paths.get(configFile);
         } catch (InvalidPathException | NullPointerException e) {
             logger.warn("Non-specified or invalid configuration file {}. Loaded default configuration instead", configFile);
-            logger.debug("Details: ",e);
+            if(e instanceof InvalidPathException) {
+                logger.debug("Details: ", e);
+            }
             useDefaultConfig = true;
         }
         boolean exists = (configPath != null && Files.exists(configPath) && !Files.isDirectory(configPath)) || useDefaultConfig;
@@ -72,7 +74,7 @@ public class ConfigurationControl {
             }
 
             loaded = true;
-            if(appLogger != null){
+            if(appLogger != null && configuration.getLog() != null) {
                 appLogger.reload(configuration);
             }else{
                 appLogger = new AppLogger(configuration);
@@ -99,7 +101,7 @@ public class ConfigurationControl {
         }
     }
 
-    public void writeNewPassword(){
+    public void write(){
         if(configuration == null) {
             return;
         }

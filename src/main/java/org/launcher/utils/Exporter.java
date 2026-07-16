@@ -1,7 +1,5 @@
 package org.launcher.utils;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -27,20 +25,12 @@ public class Exporter {
 
     private static void makeZip(Path source, Path target) throws IOException {
 
-        try (ZipOutputStream zos = new ZipOutputStream(
-                new FileOutputStream(target.toFile()));
-             FileInputStream fis = new FileInputStream(String.valueOf(source))) {
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(target));
+             InputStream fis = Files.newInputStream(source)) {
 
             ZipEntry entry = new ZipEntry(source.getFileName().toString());
             zos.putNextEntry(entry);
-
-            byte[] buffer = new byte[8192];
-            int length;
-
-            while ((length = fis.read(buffer)) > 0) {
-                zos.write(buffer, 0, length);
-            }
-
+            fis.transferTo(zos);
             zos.closeEntry();
         }
     }
@@ -50,7 +40,7 @@ public class Exporter {
                 Files.newOutputStream(target))) {
 
             try (Stream<Path> stream = Files.walk(source)) {
-                stream.filter(path -> !Files.isDirectory(path))
+                stream.filter(Files::isRegularFile)
                         .forEach(path -> {
                             ZipEntry entry = new ZipEntry(
                                     source.relativize(path).toString()
@@ -68,8 +58,6 @@ public class Exporter {
                                 throw new RuntimeException(e);
                             }
                         });
-            } catch (Exception e) {
-                throw e;
             }
         }
     }

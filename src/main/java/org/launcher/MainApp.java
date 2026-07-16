@@ -42,6 +42,7 @@ public class MainApp extends Application {
     private Thread keyloggerThread = null;
     private Stage mainStage;
     private Scene mainScene;
+    private volatile String rootId;
 
     @Override
     public void init() throws Exception {
@@ -111,7 +112,10 @@ public class MainApp extends Application {
             } else {
                 mainStage.getScene().setRoot(root);
             }
-            mainScene.getStylesheets().add(Objects.requireNonNull(MainApp.class.getResource("css/main.css")).toExternalForm());
+            String css = Objects.requireNonNull(MainApp.class.getResource("css/main.css")).toExternalForm();
+            if (!mainScene.getStylesheets().contains(css)) {
+                mainScene.getStylesheets().add(css);
+            }
             if (stage.getScene() == null) {
                 stage.setScene(mainScene);
                 stage.show();
@@ -137,6 +141,7 @@ public class MainApp extends Application {
                 case "wait" -> waitController = fxmlLoader.getController();
                 case "admin" -> adminController = fxmlLoader.getController();
             }
+            rootId = viewType;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -147,7 +152,7 @@ public class MainApp extends Application {
     }
 
     public String getRootId() {
-        return mainScene.getRoot().getId();
+        return rootId;
     }
 
     public static void main(String[] args) {
@@ -198,7 +203,7 @@ public class MainApp extends Application {
         stage.setMaximized(true);
         stage.setOnCloseRequest(Event::consume);
         stage.setAlwaysOnTop(false);
-        stage.toBack();
+        stage.toFront();
     }
 
     private void stopAllControllers() {

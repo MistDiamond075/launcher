@@ -38,51 +38,39 @@ public class AdminService {
         }
     }
 
-    public void exportLogs(){
-        Path path = Path.of(configurationControl.getConfiguration().getLog().getPath());
-        if(configurationControl.getConfiguration().getLog().isHistoryEnabled()){
-            String prefix = Files.isDirectory(path) ? "launcher" : path.getFileName().toString();
-            Pattern pattern = Pattern.compile(prefix + "-\\\\d{2}-\\\\d{2}-\\\\d{4}\\\\.log");
-            try {
+    public void exportLogs() {
+        try {
+            Path path = Path.of(configurationControl.getConfiguration().getLog().getPath());
+            if (configurationControl.getConfiguration().getLog().isHistoryEnabled()) {
+                String prefix = Files.isDirectory(path) ? "launcher" : path.getFileName().toString();
+                Pattern pattern = Pattern.compile(Pattern.quote(prefix) + "-\\\\d{2}-\\\\d{2}-\\\\d{4}\\\\.log");
+
                 Path tempDir = Files.createTempDirectory("logs-");
-            try (Stream<Path> files = Files.list(path)) {
-                files
-                        .filter(Files::isRegularFile)
-                        .filter(p -> pattern.matcher(p.getFileName().toString()).matches())
-                        .forEach(p -> moveToTemp(p, tempDir));
-                Exporter.exportLogsRecurse(tempDir);
-            } catch (IOException e) {
-                NotificationService.show("admin.txt.export.fail", "Failed to create temp directory",false, BaseException.Type.ERROR);
-                logger.error("Failed to create temp directory");
-                logger.debug("Details: ",e);
-                return;
-            }
-            } catch (IOException e) {
-               NotificationService.show("admin.logs.export.fail", "Failed to export logs",false, BaseException.Type.ERROR);
-                logger.error("Failed to export logs");
-               logger.debug("Details: ",e);
-               return;
-            }
-        }else{
-            try {
+                try (Stream<Path> files = Files.list(path)) {
+                    files
+                            .filter(Files::isRegularFile)
+                            .filter(p -> pattern.matcher(p.getFileName().toString()).matches())
+                            .forEach(p -> moveToTemp(p, tempDir));
+                    Exporter.exportLogsRecurse(tempDir);
+                }
+            } else {
                 Exporter.exportLogs(path);
-            } catch (IOException e) {
-                NotificationService.show("admin.logs.export.fail", "Failed to export logs",false, BaseException.Type.ERROR);
-                logger.error("Failed to export logs");
-                logger.debug("Details: ",e);
-                return;
             }
+            logger.info("Logs exported to {}", Exporter.getExportPath());
+            NotificationService.show(
+                    MessageFormat.format(
+                            Localization.get("admin.logs.export.success"),
+                            Exporter.getExportPath()
+                    ),
+                    "Logs exported successfully",
+                    true,
+                    BaseException.Type.INFO
+            );
+        } catch (IOException e) {
+            NotificationService.show("admin.logs.export.fail", "Failed to export logs", false, BaseException.Type.ERROR);
+            logger.error("Failed to export logs");
+            logger.debug("Details: ", e);
         }
-        logger.info("Logs exported to {}", Exporter.getExportPath());
-        NotificationService.show(
-                MessageFormat.format(
-                        Localization.get("admin.logs.export.success"),
-                        Exporter.getExportPath()
-                ),
-                "Logs exported successfully",
-                true,
-                BaseException.Type.INFO
-        );
     }
 
     public void startExplorer(){

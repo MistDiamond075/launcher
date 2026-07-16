@@ -33,7 +33,7 @@ public class PasswordManager {
         String pw = encodePassword(password);
        // System.out.println(hash);
         configurationControl.getConfiguration().getAdmin().setPassword(pw);
-        configurationControl.writeNewPassword();
+        configurationControl.write();
     }
 
     private static String encodePassword(String password) {

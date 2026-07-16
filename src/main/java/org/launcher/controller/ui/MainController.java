@@ -88,14 +88,14 @@ public class MainController {
             Rectangle2D bounds =
                     Screen.getPrimary().getBounds();
 
-            GradientAnimator background =
+            gradientAnimator =
                     new GradientAnimator(
                             (int) bounds.getWidth(),
                             (int) bounds.getHeight(),
                             GradientAnimator.rgb(151, 7, 225),
                             GradientAnimator.rgb(12, 3, 71)
                     );
-            rootStackPane.getChildren().addFirst(background);
+            rootStackPane.getChildren().addFirst(gradientAnimator);
             appsBorderPane.getStyleClass().remove("main-container");
         }
         timer.getStyleClass().add("timer");
@@ -187,7 +187,7 @@ public class MainController {
                 appButton.getStyleClass().add("app-container-button-disabled");
                 appButton.setMouseTransparent(true);
             }
-            logger.debug("Loaded app {}", app.getId());
+            logger.info("Loaded app {}", app.getId());
         }
         logger.info("Loaded {} apps", apps.size());
         NotificationService.show(

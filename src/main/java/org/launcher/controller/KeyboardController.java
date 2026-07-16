@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 import static org.launcher.utils.constants.KeyboardEventConstants.*;
 
@@ -26,6 +26,7 @@ public class KeyboardController {
     private final MainApp mainApp;
     private final byte[] keyState = new byte[256];
     private final char[] unicodeBuffer = new char[8];
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public KeyboardController(Set<Integer> hotkey, MainApp mainApp) {
         this.hotkey = Set.copyOf(hotkey);
@@ -34,45 +35,43 @@ public class KeyboardController {
 
     public void start() {
         proc = (nCode, wParam, lParam) -> {
-//            logger.debug(
-//                    "msg={}, vk={}, scan={}, flags={}",
-//                    wParam.address(),
-//                    lParam.getInt(0),
-//                    lParam.getInt(4),
-//                    lParam.getInt(8)
-//            );
             if (nCode >= 0) {
                 int vk = normalizeVk(lParam.getInt(0));
+                int vkRaw = lParam.getInt(0);
+                int scan = lParam.getInt(4);
 
                 switch ((int) wParam.address()) {
                     case WM_SYSKEYDOWN,WM_KEYDOWN -> {
-                        if (vk == 0x14 && keyState[0x14] == 0) {
-                            keyState[0x14] ^= 0x01;
-                        }else if (vk == 0x14){
-                            keyState[0x14] = 0;
-                        }
                         boolean firstPress = pressed.add(vk);
+                        Set<Integer> snapshot = Set.copyOf(pressed);
+                        if (vk == 0x14 && firstPress) {
+                            keyState[0x14] ^= 0x01;
+                        }
                         keyState[vk] |= (byte) 0x80;
-                        AdminSessionControlAsync.delayTermination();
-                        logger.debug("firstpress={}, vk={},pressed={}, hotkey={}", firstPress, vk,pressed, hotkey);
-                        if (firstPress && pressed.equals(hotkey)) {
-                            try {
-                                Platform.runLater(() -> {
-                                    if (mainApp.getRootId().equals("admin")) {
-                                        mainApp.getAdminController().makeAdminMenuActive(false);
-                                        mainApp.reloadScene(null);
-                                    } else {
-                                        mainApp.reloadScene("admin");
-                                    }
-                                });
-                            } catch (Exception e) {
-                                logger.error("Failed to reload scene");
-                                logger.debug("Details: ", e);
+                        byte[] keyStateCopy = keyState.clone();
+                        Runnable task = () -> {
+                            AdminSessionControlAsync.delayTermination();
+                            logger.debug("firstpress={}, vk={},pressed={}, hotkey={}", firstPress, vk,snapshot, hotkey);
+                            if (firstPress && snapshot.equals(hotkey)) {
+                                try {
+                                    Platform.runLater(() -> {
+                                        if (mainApp.getRootId().equals("admin")) {
+                                            mainApp.getAdminController().makeAdminMenuActive(false);
+                                            mainApp.reloadScene(null);
+                                        } else {
+                                            mainApp.reloadScene("admin");
+                                        }
+                                    });
+                                } catch (Exception e) {
+                                    logger.error("Failed to reload scene");
+                                    logger.debug("Details: ", e);
+                                }
                             }
-                        }
-                        if(mainApp.getRootId().equals("admin") && mainApp.getAdminController().getPasswordScreen().isVisible()) {
-                            redirectInput(lParam);
-                        }
+                            if(mainApp.getRootId().equals("admin") && mainApp.getAdminController().getPasswordScreen().isVisible()) {
+                                redirectInput(vkRaw,scan,keyStateCopy);
+                            }
+                        };
+                        executor.execute(task);
                     }
 
                     case WM_SYSKEYUP, WM_KEYUP -> {
@@ -122,6 +121,14 @@ public class KeyboardController {
             );
             hook = null;
         }
+        executor.shutdown();
+        try {
+            if(!executor.awaitTermination(5L,TimeUnit.SECONDS)){
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private int normalizeVk(int vk) {
@@ -133,22 +140,23 @@ public class KeyboardController {
         };
     }
 
-    private void redirectInput(Pointer lParam){
+    private void redirectInput(int vkRaw, int scan, byte[] key_state){
         String text = vkToUnicode(
-                lParam.getInt(0),
-                lParam.getInt(4)
+                vkRaw,
+                scan,
+                key_state
         );
 
         if (mainApp.getAdminController() != null) {
-            mainApp.getAdminController().appendInput(INTKEYS_STRKEYS.getOrDefault(lParam.getInt(0),text));
+            mainApp.getAdminController().appendInput(INTKEYS_STRKEYS.getOrDefault(vkRaw,text));
         }
     }
 
-    private String vkToUnicode(int vk, int scan) {
+    private String vkToUnicode(int vk, int scan, byte[] key_state) {
         int len = User32.INSTANCE.ToUnicodeEx(
                 vk,
                 scan,
-                keyState,
+                key_state,
                 unicodeBuffer,
                 unicodeBuffer.length,
                 0,

@@ -54,6 +54,11 @@ public class ForeignWindowEvent implements AutoCloseable{
         int id = hookThreadId;
         if (id != 0) {
             user32.PostThreadMessageW(id, WM_QUIT, 0, 0);
+            try {
+                hookThread.join(6000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -241,7 +246,6 @@ public class ForeignWindowEvent implements AutoCloseable{
     private void unhook(Pointer hook){
         if(hook != null && hook.address() != 0) {
             user32.UnhookWinEvent(hook);
-            hook = null;
         }
     }
 }
