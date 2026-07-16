@@ -48,11 +48,9 @@ public class Exporter {
 
                             try {
                                 zos.putNextEntry(entry);
-
                                 try (InputStream is = Files.newInputStream(path)) {
                                     is.transferTo(zos);
                                 }
-
                                 zos.closeEntry();
                             } catch (IOException e) {
                                 throw new RuntimeException(e);

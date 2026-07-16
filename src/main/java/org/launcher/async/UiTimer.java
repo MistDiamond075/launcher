@@ -29,12 +29,12 @@ public class UiTimer {
     }
 
     public static void stop(){
-        logger.info("Stopping UI Timer");
+        logger.debug("Stopping UI Timer");
         scheduledFuture.cancel(true);
         executor.shutdown();
         try {
             if(!executor.awaitTermination(5L,TimeUnit.SECONDS)){
-                logger.info("Forcing ui timer to stop");
+                logger.debug("Forcing ui timer to stop");
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {

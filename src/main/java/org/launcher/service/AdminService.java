@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -29,6 +30,7 @@ public class AdminService {
 
     public Process openTextEditor(String path) {
         try {
+            logger.info("Starting text editor for {}", path);
             return new ProcessBuilder("notepad.exe", path).start();
         } catch (IOException e) {
             NotificationService.show("admin.txt.open.fail", "Failed to open text editor",false, BaseException.Type.ERROR);
@@ -47,11 +49,26 @@ public class AdminService {
 
                 Path tempDir = Files.createTempDirectory("logs-");
                 try (Stream<Path> files = Files.list(path)) {
-                    files
+                    List<Path> fileList = files
                             .filter(Files::isRegularFile)
                             .filter(p -> pattern.matcher(p.getFileName().toString()).matches())
-                            .forEach(p -> moveToTemp(p, tempDir));
+                            .toList();
+                    int errors = 0;
+                    for (Path f : fileList) {
+                        try {
+                            moveToTemp(f, tempDir);
+                        }catch (IOException e) {
+                            logger.error("Failed to move log file {}",f);
+                            logger.debug("Details: ",e);
+                            errors++;
+                        }
+                    }
+                    if(errors == fileList.size()) {
+                        throw new IOException("Failed to move log files");
+                    }
                     Exporter.exportLogsRecurse(tempDir);
+                }finally {
+                    Files.deleteIfExists(tempDir);
                 }
             } else {
                 Exporter.exportLogs(path);
@@ -75,6 +92,7 @@ public class AdminService {
 
     public void startExplorer(){
         try {
+            logger.info("Starting explorer");
             new ProcessBuilder("explorer.exe").start();
         } catch (IOException e) {
             NotificationService.show("admin.explorer.fail", "Failed to start explorer",false, BaseException.Type.ERROR);
@@ -101,17 +119,12 @@ public class AdminService {
         Platform.exit();
     }
 
-    private static void moveToTemp(Path source, Path tempDir) {
-        try {
-            Files.move(
-                    source,
-                    tempDir.resolve(source.getFileName()),
-                    StandardCopyOption.REPLACE_EXISTING
-            );
-            logger.debug("Log file {} moved to {}", source, tempDir);
-        } catch (IOException e) {
-            logger.error("Failed to move log file {}",source);
-            logger.debug("Details: ",e);
-        }
+    private static void moveToTemp(Path source, Path tempDir) throws IOException {
+        Files.move(
+                source,
+                tempDir.resolve(source.getFileName()),
+                StandardCopyOption.REPLACE_EXISTING
+        );
+        logger.debug("Log file {} moved to {}", source, tempDir);
     }
 }

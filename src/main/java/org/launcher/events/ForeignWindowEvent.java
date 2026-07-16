@@ -52,6 +52,7 @@ public class ForeignWindowEvent implements AutoCloseable{
     public synchronized void stop() {
         running = false;
         int id = hookThreadId;
+        logger.debug("Stopping hook thread");
         if (id != 0) {
             user32.PostThreadMessageW(id, WM_QUIT, 0, 0);
             try {
@@ -115,7 +116,7 @@ public class ForeignWindowEvent implements AutoCloseable{
             }
             char[] title = new char[512];
             user32.GetWindowTextW(hwndPtr, title, title.length);
-           // logger.debug("Created window pid={}, hwnd={},title={},visible={},topLevel={},hwnds={}", pid, hwnd, new String(title).trim(), visible, topLevel,instance.getHwnds());
+            logger.debug("Created window pid={}, hwnd={},title={},visible={},topLevel={},hwnds={}", pid, hwnd, new String(title).trim(), visible, topLevel,instance.getHwnds());
         }
         else if(event == EVENT_OBJECT_CREATE){
             long style = User32.INSTANCE.GetWindowLongPtrA(hwnd, GWL_STYLE);
@@ -153,7 +154,7 @@ public class ForeignWindowEvent implements AutoCloseable{
                     closeWindowScheduler.scheduleClose(instance);
                 }
             }
-           // logger.debug("Destroyed window: pid={}, hwnd={}, hwnds={}", pid, hwnd,instance.getHwnds());
+            logger.debug("Destroyed window: pid={}, hwnd={}, hwnds={}", pid, hwnd,instance.getHwnds());
         }
         else if(event == EVENT_SYSTEM_MINIMIZESTART){
             if(instance.getHwnds().contains(hwnd)) {

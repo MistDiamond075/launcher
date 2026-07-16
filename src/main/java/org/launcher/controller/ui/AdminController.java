@@ -111,6 +111,7 @@ public class AdminController {
             }
         });
         newPasswordInput.setOnAction(e -> {
+            logger.info("Setting new password");
             PasswordManager.setPassword(newPasswordInput.getText());
             switchInputFields(passwordInput,newPasswordInput);
             passwordScreen.setVisible(false);

@@ -69,6 +69,7 @@ public class MainApp extends Application {
                 keyboardController = null;
             }
             AdminSessionControlAsync.stop();
+            logger.debug("Stopping keylogger thread");
             if (keyloggerThread != null) {
                 keyloggerThread.interrupt();
             }
@@ -92,6 +93,7 @@ public class MainApp extends Application {
 
     public void reloadScene(Stage stage, String viewType) {
         try {
+            logger.debug("Reloading scene. New view type={}", viewType);
             stopAllControllers();
             if (viewType == null) {
                 viewType = configurationControl.isLoaded() ? "main" : "wait";

@@ -121,9 +121,11 @@ public class KeyboardController {
             );
             hook = null;
         }
+        logger.debug("Stopping keyboard controller executor");
         executor.shutdown();
         try {
             if(!executor.awaitTermination(5L,TimeUnit.SECONDS)){
+                logger.debug("Forcing stop keyboard controller executor");
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {

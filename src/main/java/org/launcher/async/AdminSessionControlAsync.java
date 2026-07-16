@@ -43,13 +43,14 @@ public class AdminSessionControlAsync {
     }
 
     public static void stop() {
-        logger.info("Stopping Admin session scheduler");
+        logger.debug("Stopping Admin session scheduler");
         if(scheduledFuture != null) {
             scheduledFuture.cancel(true);
         }
         scheduler.shutdown();
         try {
             if(!scheduler.awaitTermination(5L,TimeUnit.SECONDS)){
+                logger.debug("Forcing stop admin session scheduler");
                 scheduler.shutdownNow();
             }
         } catch (InterruptedException e) {
