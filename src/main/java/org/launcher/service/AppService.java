@@ -3,11 +3,14 @@ package org.launcher.service;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import jnr.ffi.Pointer;
+import jnr.ffi.Runtime;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.entity.AppEntity;
 import org.launcher.entity.InstanceEntity;
 import org.launcher.events.ForeignWindowEvent;
 import org.launcher.exception.BaseException;
+import org.launcher.utils.jnr.lib.User32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.launcher.utils.constants.WindowEventConstants.WM_CLOSE;
 
 public class AppService {
     private static final Logger logger = LoggerFactory.getLogger(AppService.class);
@@ -84,10 +89,13 @@ public class AppService {
     }
 
     public void shutdownWindowEvent() {
-        foreignWindowEvent.close();
-        for(InstanceEntity instance : instances) {
-            instance.getProcess().destroy();
+        List<AppEntity> apps = instances.stream().map(InstanceEntity::getApp).toList();
+        for (AppEntity app : apps) {
+            for(Long hwnd : app.getHwnds()) {
+                logger.info("Closing hwnd {} result={}",hwnd,User32.INSTANCE.SendMessageW(Pointer.wrap(Runtime.getSystemRuntime(),hwnd),WM_CLOSE,Pointer.wrap(Runtime.getSystemRuntime(),0),Pointer.wrap(Runtime.getSystemRuntime(),0)));
+            }
         }
+        foreignWindowEvent.close();
     }
 
     private ProcessBuilder createProcess(AppEntity entity) {

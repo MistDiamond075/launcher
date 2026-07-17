@@ -45,6 +45,7 @@ public interface User32 {
     int GetMessageW(Pointer lpMsg, Pointer hWnd, int wMsgFilterMin, int wMsgFilterMax);
     int PeekMessageW(Pointer lpMsg, Pointer hWnd, int wMsgFilterMin, int wMsgFilterMax, int wRemoveMsg);
     int TranslateMessage(Pointer lpMsg);
+    int SendMessageW(Pointer hWnd, int lpMsg, Pointer wParam, Pointer lParam);
     int DispatchMessageW(Pointer lpMsg);
     int PostThreadMessageW(int idThread, int msg, int wParam, int lParam);
     int GetWindowThreadProcessId(Pointer hWnd, int[] lpdwProcessId);
