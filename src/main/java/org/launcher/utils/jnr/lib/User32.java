@@ -3,7 +3,7 @@ import jnr.ffi.LibraryLoader;
 import jnr.ffi.Pointer;
 import jnr.ffi.annotations.Delegate;
 import jnr.ffi.annotations.Encoding;
-import org.launcher.utils.jnr.callback.LowLevelKeyboardProc;
+import org.launcher.utils.jnr.callback.InputProc;
 import org.launcher.utils.jnr.struct.ICONINFO;
 
 public interface User32 {
@@ -36,6 +36,7 @@ public interface User32 {
             int idThread,
             int dwFlags
     );
+    Pointer GetWindow(Pointer hWnd, int uCmd);
     Pointer GetParent(Pointer hWnd);
     int UnhookWinEvent(Pointer hWinEventHook);
     int IsWindowVisible(Pointer hWnd);
@@ -62,7 +63,7 @@ public interface User32 {
     );
     Pointer SetWindowsHookExW(
             int idHook,
-            LowLevelKeyboardProc lpfn,
+            InputProc lpfn,
             Pointer hMod,
             int dwThreadId
     );
@@ -72,6 +73,7 @@ public interface User32 {
             Pointer wParam,
             Pointer lParam
     );
+    short GetAsyncKeyState(int vKey);
     boolean UnhookWindowsHookEx(Pointer hhk);
     int GetKeyboardState(byte[] lpKeyState);
     long GetKeyboardLayout(int idThread);

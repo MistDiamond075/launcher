@@ -14,20 +14,24 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Screen;
+import org.launcher.MainApp;
+import org.launcher.async.SessionControlAsync;
 import org.launcher.async.UiTimer;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.config.Localization;
+import org.launcher.entity.FolderEntity;
 import org.launcher.entity.InstanceEntity;
 import org.launcher.exception.BaseException;
 import org.launcher.service.AppService;
 import org.launcher.entity.AppEntity;
 import org.launcher.service.NotificationService;
-import org.launcher.ui.GradientAnimator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URL;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.*;
@@ -44,7 +48,13 @@ public class MainController {
     private int pages = 0;
     private final Map<InstanceEntity, ChangeListener<InstanceEntity.State>> stateListeners = new HashMap<>();
     private final Map<String, IntegerProperty> appCounters = new HashMap<>();
-    private GradientAnimator gradientAnimator;
+    private final Map<FolderEntity,List<Node>> folder_buttons = new HashMap<>();
+    @FXML
+    private VBox folderContainer;
+    @FXML
+    private Label folderContainerHeader;
+    @FXML
+    private FlowPane folderAppsContainer;
     @FXML
     private StackPane headerContainer;
     @FXML
@@ -65,6 +75,12 @@ public class MainController {
     private Button buttonLeft;
     @FXML
     private Button buttonRight;
+    @FXML
+    private Button startSessionButton;
+    @FXML
+    private Button stopSessionButton;
+    @FXML
+    private HBox globalPlaceholder;
 
     public MainController(ConfigurationControl configurationControl) {
         this.configurationControl = configurationControl;
@@ -76,6 +92,9 @@ public class MainController {
         setHeader();
         setAppList();
         subscribeToInstances();
+        String bgPath = MainApp.class.getResource("/bg.jpg").toExternalForm();
+        rootStackPane.setStyle("-fx-background-image: url('"+ bgPath+"');");
+        globalPlaceholder.setStyle("-fx-background-image: url('"+ bgPath+"');");
         NotificationService.initialize(systemMessageContainer, systemMessage);
         systemMessage.maxWidthProperty().bind(
                 systemMessageContainer.widthProperty().multiply(0.8)
@@ -84,20 +103,31 @@ public class MainController {
                 rootStackPane.widthProperty().multiply(0.8)
         );
         systemMessageContainer.setPrefWidth(100);
-        if(!configurationControl.getConfiguration().getLauncher().isDisableBackgroundAnimation()) {
-            Rectangle2D bounds =
-                    Screen.getPrimary().getBounds();
-
-            gradientAnimator =
-                    new GradientAnimator(
-                            (int) bounds.getWidth(),
-                            (int) bounds.getHeight(),
-                            GradientAnimator.rgb(151, 7, 225),
-                            GradientAnimator.rgb(12, 3, 71)
-                    );
-            rootStackPane.getChildren().addFirst(gradientAnimator);
-            appsBorderPane.getStyleClass().remove("main-container");
-        }
+        folderContainer.prefWidthProperty().bind(
+                rootStackPane.widthProperty().multiply(0.7)
+        );
+        folderContainer.prefHeightProperty().bind(
+                rootStackPane.heightProperty().multiply(0.7)
+        );
+        folderContainer.maxWidthProperty().bind(folderContainer.prefWidthProperty());
+        folderContainer.maxHeightProperty().bind(folderContainer.prefHeightProperty());
+        folderAppsContainer.prefWidthProperty().bind(
+                folderContainer.widthProperty().multiply(0.9)
+        );
+        folderAppsContainer.prefHeightProperty().bind(
+                folderContainer.heightProperty().multiply(0.9)
+        );
+        folderContainer.setVisible(false);
+        rootStackPane.addEventHandler(MouseEvent.MOUSE_CLICKED, e ->{
+            Node target = (Node) e.getTarget();
+            if(target != null && !folderContainer.isHover()) {
+                folderContainer.setVisible(false);
+            }
+        });
+        appsContainer.widthProperty().addListener((obs, oldVal, newVal) -> calculateAppListSize());
+        globalPlaceholder.setVisible(true);
+        startSessionButton.setOnAction(e -> startSession());
+        stopSessionButton.setOnAction(e -> stopSession());
         timer.getStyleClass().add("timer");
         UiTimer.start(timer);
 
@@ -105,7 +135,17 @@ public class MainController {
     }
 
     public void stopAll(){
-        appService.shutdownWindowEvent();
+        //appService.shutdownWindowEvent();
+    }
+
+    public void startSession(){
+        SessionControlAsync.start(SessionControlAsync.SessionType.USER);
+        globalPlaceholder.setVisible(false);
+    }
+
+    public void stopSession(){
+        SessionControlAsync.cancel();
+        globalPlaceholder.setVisible(true);
     }
 
     private void setHeader(){
@@ -131,62 +171,14 @@ public class MainController {
     }
 
     private void setAppList(){
+        Set<AppEntity> usedApps = addFoldersToAppList();
         Set<AppEntity> apps = configurationControl.getConfiguration().getApps();
+        apps.removeAll(usedApps);
         for(AppEntity app : apps){
-
-            Button appButton = new Button();
-            Label t = new Label(app.getName());
-            t.getStyleClass().add("app-container-button-text");
-            t.setWrapText(false);
-            appButton.setGraphic(t);
-            appButton.setAlignment(Pos.BOTTOM_CENTER);
-            appButton.getStyleClass().add("app-container-button");
-            appButton.setOnAction(e -> {
-                if(!appButton.getStyleClass().contains("app-container-button-blocked") && !appButton.getStyleClass().contains("app-container-button-disabled")) {
-                    start(app);
-                }
-            });
-            if(app.getIcon()!=null){
-                logger.debug(app.getIcon().toString());
-                appButton.setStyle(
-                        "-fx-background-image: url('"+ app.getIcon().toUri()+"');" +
-                        "-fx-background-repeat: no-repeat; " +
-                        "-fx-background-position: center;" +
-                        "-fx-background-size: 100px"
-                );
-
-            }
-
-            if(app.isEnableInstancesCounter()) {
-                IntegerProperty counterValue = new SimpleIntegerProperty(0);
-                appCounters.put(app.getId(), counterValue);
-
-                Label instanceCount = new Label();
-                instanceCount.getStyleClass().add("app-container-button-counter");
-                instanceCount.textProperty().bind(counterValue.asString());
-                instanceCount.visibleProperty().bind(counterValue.greaterThan(0));
-                instanceCount.managedProperty().bind(instanceCount.visibleProperty());
-
-                StackPane fullButton = new StackPane(appButton);
-                StackPane badge = new StackPane(instanceCount);
-                badge.setAlignment(Pos.TOP_LEFT);
-                badge.setMouseTransparent(true);
-                StackPane.setMargin(instanceCount, new Insets(-8, -8, 0, 0));
-                fullButton.getChildren().add(badge);
-                appsContainer.getChildren().add(fullButton);
-                app_button_all.put(app.getId(), fullButton);
-                if(!app.isEnabled()){
-                    fullButton.getStyleClass().add("app-container-button-disabled");
-                    fullButton.setMouseTransparent(true);
-                }
-            }else{
-                appsContainer.getChildren().add(appButton);
-                app_button_all.put(app.getId(), appButton);
-            }
-            if(!app.isEnabled()){
-                appButton.getStyleClass().add("app-container-button-disabled");
-                appButton.setMouseTransparent(true);
-            }
+            String ico = app.getIcon() != null ? app.getIcon().toUri().toString() : null;
+            Node appButton = addAppListButton(app.getName(),ico,app.isEnableInstancesCounter(),app.getId(),app.isEnabled(),appsContainer);
+           setAppStartButtonAction(appButton,app);
+            app_button_all.put(app.getId(), appButton);
             logger.info("Loaded app {}", app.getId());
         }
         logger.info("Loaded {} apps", apps.size());
@@ -206,12 +198,111 @@ public class MainController {
         }
     }
 
-    private void start(AppEntity app) {
-        appService.start(app);
+    private Set<AppEntity> addFoldersToAppList(){
+        Set<AppEntity> apps = new HashSet<>();
+        int counter = 1;
+        for(FolderEntity f : configurationControl.getConfiguration().getFolders()){
+            URL iconResource = MainApp.class.getResource("/folder-icon.png");
+            String ico = iconResource != null ? iconResource.toExternalForm() : null;
+            Button folderIcon = (Button) addAppListButton(f.getName(), ico, false, "folder"+counter, true, appsContainer);
+            List<Node> btns = new ArrayList<>();
+            apps.addAll(f.getApps());
+            for(AppEntity app : f.getApps()){
+                Node btn = addAppListButton(app.getName(),app.getIcon().toUri().toString(),app.isEnableInstancesCounter(),app.getId(),app.isEnabled(), folderAppsContainer);
+                btns.add(btn);
+                app_button_all.put(app.getId(), btn);
+                setAppStartButtonAction(btn,app);
+            }
+            folderIcon.setOnAction(e ->{
+                fillFolderContainer(f);
+                folderContainer.setVisible(true);
+            });
+            folder_buttons.put(f, btns);
+            counter++;
+        }
+        return apps;
     }
 
-    public void initWindowTracking() {
-        appService.initWindowEvent();
+    private void fillFolderContainer(FolderEntity folder){
+        List<Node> buttons = folder_buttons.getOrDefault(folder, new ArrayList<>());
+        folderAppsContainer.getChildren().clear();
+        for(Node button : buttons){
+            folderAppsContainer.getChildren().add(button);
+        }
+        folderContainerHeader.setText(folder.getName());
+    }
+
+    private void setAppStartButtonAction(Node appButton, AppEntity app){
+        if(appButton instanceof Button) {
+            ((Button)appButton).setOnAction(e -> {
+                if (!appButton.getStyleClass().contains("app-container-button-blocked") && !appButton.getStyleClass().contains("app-container-button-disabled")) {
+                    start(app);
+                }
+            });
+        }else{
+            ((Button)((StackPane)appButton).getChildren().getFirst()).setOnAction(e -> {
+                if (!appButton.getStyleClass().contains("app-container-button-blocked") && !appButton.getStyleClass().contains("app-container-button-disabled")) {
+                    start(app);
+                }
+            });
+        }
+    }
+
+    private Node addAppListButton(String name,String icon,boolean addInstanceCounter,String id, boolean enabled, FlowPane container){
+        Node result;
+        Button appButton = new Button();
+        Label t = new Label(name);
+        t.getStyleClass().add("app-container-button-text");
+        t.setWrapText(false);
+        appButton.setGraphic(t);
+        appButton.setAlignment(Pos.BOTTOM_CENTER);
+        appButton.getStyleClass().add("app-container-button");
+        if(icon!=null){
+            logger.debug("{} icon path={}",name, icon);
+            appButton.setStyle(
+                    "-fx-background-image: url('"+ icon+"');" +
+                            "-fx-background-repeat: no-repeat; " +
+                            "-fx-background-position: center;" +
+                            "-fx-background-size: 100px"
+            );
+
+        }
+
+        if(addInstanceCounter) {
+            IntegerProperty counterValue = new SimpleIntegerProperty(0);
+            appCounters.put(id, counterValue);
+
+            Label instanceCount = new Label();
+            instanceCount.getStyleClass().add("app-container-button-counter");
+            instanceCount.textProperty().bind(counterValue.asString());
+            instanceCount.visibleProperty().bind(counterValue.greaterThan(0));
+            instanceCount.managedProperty().bind(instanceCount.visibleProperty());
+
+            StackPane fullButton = new StackPane(appButton);
+            StackPane badge = new StackPane(instanceCount);
+            badge.setAlignment(Pos.TOP_LEFT);
+            badge.setMouseTransparent(true);
+            StackPane.setMargin(instanceCount, new Insets(-8, -8, 0, 0));
+            fullButton.getChildren().add(badge);
+            container.getChildren().add(fullButton);
+            if(!enabled){
+                fullButton.getStyleClass().add("app-container-button-disabled");
+                fullButton.setMouseTransparent(true);
+            }
+            result = fullButton;
+        }else{
+            result = appButton;
+            container.getChildren().add(appButton);
+        }
+        if(!enabled){
+            appButton.getStyleClass().add("app-container-button-disabled");
+            appButton.setMouseTransparent(true);
+        }
+        return result;
+    }
+
+    private void start(AppEntity app) {
+        appService.start(app);
     }
 
     public void calculateAppListSize(){
@@ -277,7 +368,7 @@ public class MainController {
 
         IntegerProperty counter = appCounters.get(appId);
         if (counter != null) {
-            counter.set(instance.getApp().getHwnds().size());
+            //counter.set(instance.getApp().getHwnds().size());
         }
 
         attachStateListener(instance);
@@ -289,7 +380,7 @@ public class MainController {
 
         IntegerProperty counter = appCounters.get(appId);
         if (counter != null) {
-            counter.set(instance.getApp().getHwnds().size());
+          //  counter.set(instance.getApp().getHwnds().size());
         }
 
         detachStateListener(instance);
@@ -298,7 +389,7 @@ public class MainController {
     private void attachStateListener(InstanceEntity instance) {
         ChangeListener<InstanceEntity.State> listener = (obs, oldState, newState) ->
                 Platform.runLater(() -> {
-                    if(newState == InstanceEntity.State.CLOSED && instance.getHwnds().isEmpty()){
+                    if(newState == InstanceEntity.State.CLOSED){ //&& instance.getHwnds().isEmpty()){
                         appService.removeInstance(instance);
                     }
                     updateButtonState(instance);
@@ -317,7 +408,6 @@ public class MainController {
 
     private void updateButtonState(InstanceEntity instance) {
         Node button = app_button_all.get(instance.getApp().getId());
-        AppEntity app = instance.getApp();
         if (button == null) {
             return;
         }
@@ -328,10 +418,8 @@ public class MainController {
                 }
             }
             case CLOSED -> {
-                if(app.getHwnds().isEmpty()) {
-                    button.getStyleClass().remove("app-container-button-active");
-                    button.getStyleClass().remove("app-container-button-blocked");
-                }
+                button.getStyleClass().remove("app-container-button-active");
+                button.getStyleClass().remove("app-container-button-blocked");
             }
             case CLOSING -> {
                 button.getStyleClass().remove("app-container-button-active");

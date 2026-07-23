@@ -1,6 +1,5 @@
 package org.launcher.controller;
 
-import org.launcher.async.AdminSessionControlAsync;
 import org.launcher.utils.jnr.lib.ComCtl32;
 import org.launcher.utils.jnr.callback.WindowSubclass;
 import org.slf4j.Logger;
@@ -9,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import static org.launcher.utils.constants.WindowEventConstants.*;
 
 public class MainWindowController {
-    private static final Logger logger = LoggerFactory.getLogger(MainWindowController.class);
     private final WindowSubclass subclassProc = this::windowProc;
     private long hwnd;
     private static final long SUBCLASS_ID = 1;
@@ -17,12 +15,7 @@ public class MainWindowController {
     public void setHwnd(long hwnd){
         this.hwnd = hwnd;
 
-        if (ComCtl32.INSTANCE.SetWindowSubclass(
-                hwnd,
-                subclassProc,
-                SUBCLASS_ID,
-                0
-        ) == 0) {
+        if (ComCtl32.INSTANCE.SetWindowSubclass(hwnd, subclassProc, SUBCLASS_ID, 0) == 0) {
             throw new IllegalStateException("SetWindowSubclass failed");
         }
     }
@@ -52,8 +45,8 @@ public class MainWindowController {
         switch (msg) {
 
             case WM_MOUSEACTIVATE -> {
-             //   logger.debug("Mouse activated");
-                AdminSessionControlAsync.delayTermination();
+//                logger.debug("Mouse activated");
+//                SessionControlAsync.delayTermination();
                 return MA_NOACTIVATE;
             }
 
@@ -66,6 +59,7 @@ public class MainWindowController {
             }
 
             default -> {
+               // logger.debug("Unknown windowProc message {}", msg);
                 return ComCtl32.INSTANCE.DefSubclassProc(
                         hwnd, msg, wParam, lParam
                 );

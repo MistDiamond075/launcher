@@ -7,7 +7,8 @@
     "hideCursor": false,
     "disableBackgroundAnimation": true,
     "allowMultipleInstances": true,
-    "adminMenuEnabled": true
+    "adminMenuEnabled": true,
+    "sessionTimeout": 1
   },
   "apps": [
     {
@@ -16,7 +17,7 @@
       "description" : "demo npad test",
       "icon" : null,
       "path" : "C:\\Windows\\System32\\notepad.exe",
-      "arguments" : "",
+      "arguments" : [],
       "workingDirectory" : "C:\\Windows\\System32",
       "enabled" : true,
       "allowMultipleInstances" : false,
@@ -24,13 +25,13 @@
       "restartOnError" : true,
       "maxRuntime" : null
     }, {
-      "id" : "calc",
-      "name" : "calc",
+      "id" : "edge",
+      "name" : "edge",
       "description" : "demo calc test",
       "icon" : null,
-      "path" : "C:\\Windows\\System32\\calc.exe",
-      "arguments" : "",
-      "workingDirectory" : "C:\\Windows\\System32",
+      "path" : "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+      "arguments" : [],
+      "workingDirectory" : "C:\\Program Files (x86)\\Microsoft\\Edge\\Application",
       "enabled" : true,
       "allowMultipleInstances" : true,
       "enableInstancesCounter" : false,
@@ -42,7 +43,7 @@
       "description" : "demo browser test",
       "icon" : null,
       "path" : "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-      "arguments" : "--new-window\"",
+      "arguments" : ["--new-window\""],
       "workingDirectory" : "C:\\Program Files\\Google\\Chrome\\Application",
       "enabled" : true,
       "allowMultipleInstances" : true,
@@ -55,13 +56,32 @@
       "description" : "unregistartion command",
       "icon" : null,
       "path" : "D:\\launcher\\dist\\launcher\\resetkey.bat",
-      "arguments" : "",
+      "arguments" : [],
       "workingDirectory" : "D:\\launcher\\dist\\launcher",
       "enabled" : true,
       "allowMultipleInstances" : false,
       "enableInstancesCounter" : false,
       "restartOnError" : true,
       "maxRuntime" : null
+    }, {
+      "id" : "word",
+      "name" : "MS Word",
+      "description" : "mysql command line access",
+      "icon" : null,
+      "path" : "C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE",
+      "arguments" : [],
+      "workingDirectory" : "C:\\Program Files\\Microsoft Office\\root\\Office16",
+      "enabled" : true,
+      "allowMultipleInstances" : false,
+      "enableInstancesCounter" : false,
+      "restartOnError" : true,
+      "maxRuntime" : null
+    }
+  ],
+  "folders": [
+    {
+      "name": "sample folder",
+      "apps": ["word", "notepad"]
     }
   ],
   "admin": {

@@ -3,7 +3,6 @@ module org.launcher {
     requires javafx.graphics;
     requires javafx.fxml;
 
-    requires com.dlsc.formsfx;
     requires ch.qos.logback.classic;
     requires ch.qos.logback.core;
     requires org.slf4j;
@@ -13,8 +12,6 @@ module org.launcher {
     requires java.desktop;
     requires org.jnrproject.ffi;
     requires de.mkammerer.argon2.nolibs;
-    requires com.sun.jna;
-
     exports org.launcher;
 
     opens org.launcher.utils to ch.qos.logback.core;

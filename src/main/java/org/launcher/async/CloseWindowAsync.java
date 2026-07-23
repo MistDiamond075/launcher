@@ -14,30 +14,28 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class CloseWindowAsync {
     private static final Logger logger = LoggerFactory.getLogger(CloseWindowAsync.class);
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private final Pair<Long,TimeUnit> defaultDelay = new Pair<>(150L, TimeUnit.MILLISECONDS);
-    private final Pair<Long,TimeUnit> defaultPeriod = new Pair<>(5000L, TimeUnit.MILLISECONDS);
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private static final Pair<Long,TimeUnit> defaultDelay = new Pair<>(150L, TimeUnit.MILLISECONDS);
+    private static final Pair<Long,TimeUnit> defaultPeriod = new Pair<>(5000L, TimeUnit.MILLISECONDS);
 
-    public CloseWindowAsync() {}
-
-    public void scheduleClose(final InstanceEntity instance, final long delay,final long period, final TimeUnit unit) {
+    public static void scheduleClose(final InstanceEntity instance, final long delay,final long period, final TimeUnit unit) {
         AtomicReference<ScheduledFuture<?>> ref = new AtomicReference<>();
 
         ref.set(scheduler.scheduleAtFixedRate(() -> {
+            logger.debug("Trying to close window, hwnds={}", instance.getHwnds());
             if (instance.getHwnds().isEmpty()) {
-                Platform.runLater(() ->
-                        instance.setState(InstanceEntity.State.CLOSED));
+                Platform.runLater(() -> instance.setState(InstanceEntity.State.CLOSED));
 
                 ref.get().cancel(false);
             }
         }, delay, period, unit));
     }
 
-    public void scheduleClose(final InstanceEntity instance) {
+    public static void scheduleClose(final InstanceEntity instance) {
         scheduleClose(instance,defaultDelay.key, defaultPeriod.key, defaultDelay.value);
     }
 
-    public void stop() {
+    public static void stop() {
         try {
             logger.debug("Stopping CloseWindow scheduler");
             scheduler.shutdown();

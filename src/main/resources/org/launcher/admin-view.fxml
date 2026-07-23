@@ -3,8 +3,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.launcher.controller.ui.AdminController" fx:id="rootStackPane">
-    <BorderPane style="-fx-font-size: 24px;" xmlns="http://javafx.com/javafx" styleClass="main-container" fx:id="buttonsBorderPane">
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.launcher.controller.ui.AdminController" fx:id="rootStackPane" styleClass="main-container">
+    <BorderPane style="-fx-font-size: 24px;" xmlns="http://javafx.com/javafx" fx:id="buttonsBorderPane">
         <top>
             <HBox alignment="CENTER" prefWidth="Infinity">
                 <Label text="_header_" styleClass="header" fx:id="configStatus"/>

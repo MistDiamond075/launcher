@@ -12,7 +12,8 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.TextAlignment;
-import org.launcher.async.AdminSessionControlAsync;
+import org.launcher.MainApp;
+import org.launcher.async.SessionControlAsync;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.exception.BaseException;
 import org.launcher.service.AdminService;
@@ -65,6 +66,9 @@ public class AdminController {
         setConfigStatusText();
         addControlButtons();
         authorizeListener();
+        String bgPath = MainApp.class.getResource("/bg.jpg").toExternalForm();
+        passwordScreen.setStyle("-fx-background-image: url(" + bgPath + ");");
+        rootStackPane.setStyle("-fx-background-image: url(" + bgPath + ");");
     }
 
     public HBox getPasswordScreen() {
@@ -100,7 +104,8 @@ public class AdminController {
                 logger.warn("Log in attempt failed: invalid password");
             }else{
                 logger.info("Logged successfully");
-                AdminSessionControlAsync.start();
+                SessionControlAsync.cancel();
+                SessionControlAsync.start(SessionControlAsync.SessionType.ADMIN);
                 if(!PasswordManager.isPasswordHash()){
                     switchInputFields(newPasswordInput,passwordInput);
                 }else {

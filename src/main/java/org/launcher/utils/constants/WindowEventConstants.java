@@ -23,9 +23,11 @@ public class WindowEventConstants {
     public static final int WINEVENT_SKIPOWNPROCESS = 0x0002;
     public static final int SW_RESTORE = 9;
     public static final int GWL_STYLE = -16;
+    public static final int GWL_EXSTYLE = -20;
     public static final long WS_MINIMIZEBOX = 0x00020000L;
     public static final int SWP_NOMOVE = 0x0002;
     public static final int SWP_NOSIZE = 0x0001;
     public static final int SWP_NOZORDER = 0x0004;
     public static final int SWP_FRAMECHANGED = 0x0020;
+    public static final int GW_OWNER = 4;
 }

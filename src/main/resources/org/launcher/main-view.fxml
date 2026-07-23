@@ -3,8 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.launcher.controller.ui.MainController" fx:id="rootStackPane">
-    <BorderPane style="-fx-font-size: 24px;" xmlns="http://javafx.com/javafx" styleClass="main-container" fx:id="appsBorderPane">
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.launcher.controller.ui.MainController" fx:id="rootStackPane" styleClass="main-container">
+    <BorderPane style="-fx-font-size: 24px;" xmlns="http://javafx.com/javafx" fx:id="appsBorderPane">
         <top>
         </top>
         <center>
@@ -27,8 +27,19 @@
         </bottom>
     </BorderPane>
     <StackPane fx:id="headerContainer" mouseTransparent="true">
-
     </StackPane>
+    <VBox fx:id="folderContainer" styleClass="folder-container" alignment="TOP_CENTER">
+        <Label fx:id="folderContainerHeader" styleClass="folder-container-header">Sample header</Label>
+        <FlowPane fx:id="folderAppsContainer" alignment="CENTER" styleClass="folder-apps-container" prefWidth="Infinity" prefHeight="Infinity"/>
+    </VBox>
+    <Button fx:id="stopSessionButton" styleClass="navigation-button, stop-session-button" text="Выйти" prefWidth="120" prefHeight="50" StackPane.alignment="TOP_RIGHT">
+        <StackPane.margin>
+            <Insets right="10" top="10"/>
+        </StackPane.margin>
+    </Button>
+    <HBox fx:id="globalPlaceholder" alignment="CENTER" styleClass="main-container, start-session-button" StackPane.alignment="CENTER">
+        <Button styleClass="navigation-button" text="Начать" fx:id="startSessionButton" prefWidth="170" prefHeight="70"/>
+    </HBox>
     <HBox
             styleClass="system-message-container"
             alignment="CENTER" maxHeight="-Infinity"

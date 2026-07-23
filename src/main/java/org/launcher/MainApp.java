@@ -8,11 +8,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.launcher.async.AdminSessionControlAsync;
+import org.launcher.async.SessionControlAsync;
 import org.launcher.async.UiTimer;
 import org.launcher.config.ConfigurationControl;
 import org.launcher.config.Localization;
 import org.launcher.controller.KeyboardController;
+import org.launcher.controller.MouseController;
 import org.launcher.controller.ui.AdminController;
 import org.launcher.controller.ui.MainController;
 import org.launcher.controller.MainWindowController;
@@ -39,7 +40,9 @@ public class MainApp extends Application {
     private AdminController adminController = null;
     private MainWindowController mainWindowController;
     private KeyboardController keyboardController;
-    private Thread keyloggerThread = null;
+    private final MouseController mouseController = new MouseController();
+    private Thread keyboardHookThread = null;
+    private Thread mouseHookThread = null;
     private Stage mainStage;
     private Scene mainScene;
     private volatile String rootId;
@@ -49,9 +52,11 @@ public class MainApp extends Application {
         NotificationService.show("app.startup", "Starting launcher...",false, 2L, null);
         loadConfiguration();
         mainWindowController = new MainWindowController();
-        AdminSessionControlAsync.initialize(configurationControl,this);
-        if (configurationControl.isLoaded()) {
+        SessionControlAsync.initialize(configurationControl,this);
+        try {
             keyboardController = new KeyboardController(configurationControl.getConfiguration().getAdmin().getCombination(), this);
+        } catch (NullPointerException e) {
+            logger.error("Failed to initialize keyboard controller: unable to read hotkey from config");
         }
         WatchdogClient.start();
         logger = LoggerFactory.getLogger(MainApp.class);
@@ -68,10 +73,13 @@ public class MainApp extends Application {
                 keyboardController.stop();
                 keyboardController = null;
             }
-            AdminSessionControlAsync.stop();
+            SessionControlAsync.stop();
             logger.debug("Stopping keylogger thread");
-            if (keyloggerThread != null) {
-                keyloggerThread.interrupt();
+            if (keyboardHookThread != null) {
+                keyboardHookThread.interrupt();
+            }
+            if(mouseHookThread != null) {
+                mouseHookThread.interrupt();
             }
             UiTimer.stop();
             WatchdogClient.stop();
@@ -102,9 +110,9 @@ public class MainApp extends Application {
             if (!configurationControl.isLoaded() && !viewType.equals("admin")) {
                 fxmlLoader = new FXMLLoader(MainApp.class.getResource("wait-view.fxml"));
             } else {
-                fxmlLoader = viewType.equals("admin") ?
-                        new FXMLLoader(MainApp.class.getResource("admin-view.fxml")) :
-                        new FXMLLoader(MainApp.class.getResource("main-view.fxml"));
+                fxmlLoader = new FXMLLoader(MainApp.class.getResource(
+                        viewType.equals("admin") ? "admin-view.fxml" : "main-view.fxml"
+                        ));
             }
             makeUiControllers(fxmlLoader, viewType);
             Parent root = fxmlLoader.load();
@@ -122,6 +130,7 @@ public class MainApp extends Application {
                 stage.setScene(mainScene);
                 stage.show();
             }
+            setInputHooks();
             switch (viewType) {
                 case "main" -> {
                     Platform.runLater(() -> {
@@ -129,16 +138,7 @@ public class MainApp extends Application {
                         mainWindowController.setHwnd(hwnd);
                         applyNoActivate(hwnd);
                     });
-                    if(keyloggerThread == null) {
-                        keyloggerThread = new Thread(() -> keyboardController.start());
-                        keyloggerThread.setDaemon(true);
-                        keyloggerThread.setName("KeyloggerThread");
-                        keyloggerThread.start();
-                    }
                     mainController = fxmlLoader.getController();
-                    mainController.initWindowTracking();
-                    Runnable loadSceneListener = () -> mainController.calculateAppListSize();
-                    Platform.runLater(loadSceneListener);
                 }
                 case "wait" -> waitController = fxmlLoader.getController();
                 case "admin" -> adminController = fxmlLoader.getController();
@@ -198,6 +198,21 @@ public class MainApp extends Application {
                     default -> throw new IllegalArgumentException("Unknown controller type: " + type);
                 }
         );
+    }
+
+    private void setInputHooks(){
+        if(mouseHookThread == null) {
+            mouseHookThread = new Thread(mouseController::start);
+            mouseHookThread.setDaemon(true);
+            mouseHookThread.setName("MouseHookThread");
+            mouseHookThread.start();
+        }
+        if(keyboardHookThread == null && keyboardController != null) {
+            keyboardHookThread = new Thread(() -> keyboardController.start());
+            keyboardHookThread.setDaemon(true);
+            keyboardHookThread.setName("KeyboardHookThread");
+            keyboardHookThread.start();
+        }
     }
 
     private void preventExit(Stage stage) {

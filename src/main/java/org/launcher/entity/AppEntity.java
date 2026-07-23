@@ -1,7 +1,6 @@
 package org.launcher.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.launcher.exception.EntityValidationException;
 import org.launcher.utils.PathManager;
@@ -13,9 +12,8 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class AppEntity implements BaseEntity{
     private static final Logger logger = LoggerFactory.getLogger(AppEntity.class);
@@ -24,15 +22,13 @@ public class AppEntity implements BaseEntity{
     private final String description;
     private Path icon;
     private final Path path;
-    private final String arguments;
+    private final List<String> arguments;
     private final Path workingDirectory;
     private boolean enabled;
     private final boolean allowMultipleInstances;
     private final boolean enableInstancesCounter;
     private final boolean restartOnError;
     private final Integer maxRuntime;
-    @JsonIgnore
-    private final Set<Long> hwnds = new HashSet<>();
 
     @JsonCreator
     public AppEntity(
@@ -41,7 +37,7 @@ public class AppEntity implements BaseEntity{
             @JsonProperty("description") String description,
             @JsonProperty("icon") String icon,
             @JsonProperty("path") String path,
-            @JsonProperty("arguments") String arguments,
+            @JsonProperty("arguments") List<String> arguments,
             @JsonProperty("workingDirectory") String workingDirectory,
             @JsonProperty("enabled") boolean enabled,
             @JsonProperty("allowMultipleInstances") boolean allowMultipleInstances,
@@ -60,6 +56,21 @@ public class AppEntity implements BaseEntity{
         this.enableInstancesCounter = enableInstancesCounter;
         this.restartOnError = restartOnError;
         this.maxRuntime = maxRuntime;
+    }
+
+    public AppEntity(String name,String id,String icon,boolean enabled,boolean allowMultipleInstances,boolean enableInstancesCounter,boolean restartOnError,Integer maxRuntime){
+        this.id = id;
+        this.name = name;
+        this.icon = PathManager.normalize(icon);
+        this.enabled = enabled;
+        this.allowMultipleInstances = allowMultipleInstances;
+        this.enableInstancesCounter = enableInstancesCounter;
+        this.restartOnError = restartOnError;
+        this.maxRuntime = maxRuntime;
+        this.workingDirectory = null;
+        this.arguments = null;
+        this.path = null;
+        this.description = null;
     }
 
     public String getId() {
@@ -82,7 +93,7 @@ public class AppEntity implements BaseEntity{
         return path;
     }
 
-    public String getArguments() {
+    public List<String> getArguments() {
         return arguments;
     }
 
@@ -108,14 +119,6 @@ public class AppEntity implements BaseEntity{
 
     public Integer getMaxRuntime() {
         return maxRuntime;
-    }
-
-    public Set<Long> getHwnds() {
-        return hwnds;
-    }
-
-    public void addHwnd(Long hwnd) {
-        hwnds.add(hwnd);
     }
 
     @JsonProperty("path")

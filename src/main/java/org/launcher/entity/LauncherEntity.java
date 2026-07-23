@@ -21,12 +21,14 @@ public class LauncherEntity implements BaseEntity{
     private final boolean disableBackgroundAnimation;
     private final boolean allowMultipleInstances;
     private final boolean adminMenuEnabled;
+    private final Integer sessionTimeout;
     @JsonIgnore
     private final boolean isTitlePicture;
 
     @JsonCreator
     public LauncherEntity(@JsonProperty("title") String title,
                           @JsonProperty("orgName")  String orgName,
+                          @JsonProperty("sessionTimeout") int sessionTimeout,
                           @JsonProperty("fullscreen") boolean fullscreen,
                           @JsonProperty("showDate") boolean showDate,
                           @JsonProperty("hideCursor") boolean hideCursor,
@@ -35,6 +37,7 @@ public class LauncherEntity implements BaseEntity{
                           @JsonProperty("adminMenuEnabled") boolean adminMenuEnabled) {
         this.title = title;
         this.orgName = orgName;
+        this.sessionTimeout = sessionTimeout < 1 ? 1 : sessionTimeout;
         this.fullscreen = fullscreen;
         this.showDate = showDate;
         this.hideCursor = hideCursor;
@@ -69,6 +72,10 @@ public class LauncherEntity implements BaseEntity{
 
     public boolean isAdminMenuEnabled() {
         return adminMenuEnabled;
+    }
+
+    public Integer getSessionTimeout() {
+        return sessionTimeout;
     }
 
     @Override
